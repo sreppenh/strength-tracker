@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, Plus } from 'lucide-react';
+import { Menu, Plus, Home } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -152,6 +152,20 @@ function App() {
     setView('home');
   };
 
+  const goBackToHome = () => {
+    const hasProgress = Object.values(currentWorkout).some(sets => sets > 0);
+    
+    if (hasProgress) {
+      const confirmed = window.confirm(
+        "You have unsaved progress. Are you sure you want to go back to home? Your current workout will be lost."
+      );
+      if (!confirmed) return;
+    }
+    
+    setCurrentWorkout({});
+    setView('home');
+  };
+
   const hasActiveSets = () => {
     return Object.values(currentWorkout).some(sets => sets > 0);
   };
@@ -166,7 +180,7 @@ function App() {
         <div className="flex items-center justify-between p-4 border-b-2 border-black">
           <button 
             onClick={() => setSelectedHistoryWorkout(null)}
-            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px]"
+            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             ←
           </button>
@@ -300,7 +314,7 @@ function App() {
         <div className="flex items-center justify-between p-4 border-b-2 border-black">
           <button 
             onClick={() => setView('workout')}
-            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px]"
+            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             ←
           </button>
@@ -381,7 +395,13 @@ function App() {
   return (
     <div className="min-h-screen bg-white text-black font-mono">
       <div className="flex items-center justify-between p-4 border-b-2 border-black">
-        <Menu size={24} className="text-black" />
+        <button 
+          onClick={goBackToHome}
+          className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+          title="Back to Home"
+        >
+          <Home size={20} />
+        </button>
         <h1 className="text-xl font-bold">TODAY'S WORKOUT</h1>
         <div className="w-6"></div>
       </div>
