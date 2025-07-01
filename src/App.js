@@ -5,13 +5,13 @@ import './App.css';
 function App() {
   // Exercise library
   const exerciseLibrary = {
-    chest: ["Incline Bench", "Coffin Press", "Dips", "Flys", "General"],
-    back: ["Pull-Ups", "Bent Over Row", "Overhead Pull-Down", "Shrugs", "General"],
-    shoulders: ["Overhead Press", "Machine Side Raises", "Dumbbell Side Raises", "Face Pulls", "Side Lifts", "General"],
-    biceps: ["Curl-Ups", "Incline Curls", "Standing Curls", "Hammer Curls", "General"],
-    triceps: ["Skull Crushers", "Overhead Lift", "Bench Dips", "General"],
-    legs: ["Squats", "Deadlifts", "General"],
-    core: ["Leg Raises", "Sit-Ups", "Ab Wheel", "Russian Twists", "General"]
+    chest: ["Incline Bench", "Coffin Press", "Dips", "Flys", "Chest General"],
+    back: ["Pull-Ups", "Bent Over Row", "Overhead Pull-Down", "Shrugs", "Back General"],
+    shoulders: ["Overhead Press", "Machine Side Raises", "Dumbbell Side Raises", "Face Pulls", "Side Lifts", "Shoulders General"],
+    biceps: ["Curl-Ups", "Incline Curls", "Standing Curls", "Hammer Curls", "Biceps General"],
+    triceps: ["Skull Crushers", "Overhead Lift", "Bench Dips", "Triceps General"],
+    legs: ["Squats", "Deadlifts", "Legs General"],
+    core: ["Leg Raises", "Sit-Ups", "Ab Wheel", "Russian Twists", "Core General"]
   };
 
   const [workouts, setWorkouts] = useState([]);
@@ -336,7 +336,9 @@ function App() {
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="font-bold text-lg">{exercise}</div>
+                      <div className="font-bold text-lg">
+                        {exercise.includes('General') ? 'General' : exercise}
+                      </div>
                       <div className="text-xl font-bold">{currentSets} sets</div>
                     </div>
                     <div className="flex flex-col gap-2">
