@@ -395,13 +395,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white text-black font-mono">
       <div className="flex items-center justify-between p-4 border-b-2 border-black">
-        <button 
-          onClick={goBackToHome}
-          className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
-          title="Back to Home"
-        >
-          <Home size={20} />
-        </button>
+        <Menu size={24} className="text-black" />
         <h1 className="text-xl font-bold">TODAY'S WORKOUT</h1>
         <div className="w-6"></div>
       </div>
@@ -444,14 +438,24 @@ function App() {
           })}
         </div>
 
-        {hasActiveSets() && (
+        <div className="space-y-4">
           <button
-            onClick={finishWorkout}
-            className="w-full bg-black text-white py-4 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px]"
+            onClick={goBackToHome}
+            className="w-full bg-white text-black py-4 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px] flex items-center justify-center gap-2"
           >
-            FINISH WORKOUT
+            <Home size={20} />
+            BACK TO HOME
           </button>
-        )}
+          
+          {hasActiveSets() && (
+            <button
+              onClick={finishWorkout}
+              className="w-full bg-black text-white py-4 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px]"
+            >
+              FINISH WORKOUT
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
