@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, Plus, Home, Settings, Download, ArrowLeft } from 'lucide-react';
-import './App.css';import React, { useState, useEffect } from 'react';
-import { Menu, Plus, Home, Settings, Download, ArrowLeft } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -14,93 +12,6 @@ function App() {
     triceps: ["Skull Crushers", "Overhead Lift", "Bench Dips", "Triceps General"],
     legs: ["Squats", "Deadlifts", "Legs General"],
     core: ["Leg Raises", "Sit-Ups", "Ab Wheel", "Russian Twists", "Core General"]
-  }
-
-  // Settings View
-  if (view === 'settings') {
-    return (
-      <div className="min-h-screen bg-white text-black font-mono">
-        <div className="flex items-center justify-between p-4 border-b-2 border-black">
-          <button 
-            onClick={() => setView('home')}
-            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-xl font-bold">SETTINGS</h1>
-          <div className="w-6"></div>
-        </div>
-
-        <div className="p-4 space-y-6">
-          {/* Reps Tracking Toggle */}
-          <div className="border-2 border-black p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-bold text-lg">Reps Tracking</div>
-                <div className="text-sm text-gray-700">Track individual reps per set</div>
-              </div>
-              <button
-                onClick={() => updateSettings('repsTracking', !appData.settings.repsTracking)}
-                className={`w-16 h-8 rounded-full border-2 border-black transition-colors ${
-                  appData.settings.repsTracking ? 'bg-black' : 'bg-white'
-                }`}
-              >
-                <div
-                  className={`w-6 h-6 rounded-full border border-black transition-transform ${
-                    appData.settings.repsTracking 
-                      ? 'translate-x-8 bg-white' 
-                      : 'translate-x-1 bg-black'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
-
-          {/* Manage Exercises */}
-          <div className="border-2 border-black p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-bold text-lg">Manage Exercises</div>
-                <div className="text-sm text-gray-700">Add or remove custom exercises</div>
-              </div>
-              <button
-                onClick={() => alert('Exercise management coming in Phase 3!')}
-                className="bg-white text-black px-4 py-2 border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
-              >
-                MANAGE
-              </button>
-            </div>
-          </div>
-
-          {/* Export Data */}
-          <div className="border-2 border-black p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-bold text-lg">Export Data</div>
-                <div className="text-sm text-gray-700">Download workout history as CSV</div>
-              </div>
-              <button
-                onClick={exportToCSV}
-                className="bg-black text-white px-4 py-2 border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px] flex items-center gap-2"
-              >
-                <Download size={16} />
-                CSV
-              </button>
-            </div>
-          </div>
-
-          {/* App Info */}
-          <div className="border-2 border-black p-4">
-            <div className="font-bold text-lg mb-2">App Information</div>
-            <div className="text-sm text-gray-700 space-y-1">
-              <div>Version: MVP3 Phase 2</div>
-              <div>Workouts Logged: {appData.workouts.length}</div>
-              <div>Data Storage: localStorage</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   // Local Storage Functions
@@ -124,7 +35,6 @@ function App() {
       console.log('Saved data to localStorage:', data);
     } catch (error) {
       console.error('Error saving to localStorage:', error);
-      // TODO: Handle quota exceeded or other storage errors
     }
   };
 
@@ -141,11 +51,11 @@ function App() {
       if (workout.exercises) {
         Object.entries(workout.exercises).forEach(([exercise, count]) => {
           if (typeof count === 'number' && count > 0) {
-            migratedExercises[exercise] = count; // Keep simple count for now
+            migratedExercises[exercise] = count;
           }
         });
       } else if (workout.muscleGroups) {
-        // Handle very old MVP1 format - convert to exercises
+        // Handle very old MVP1 format
         Object.entries(workout.muscleGroups).forEach(([muscle, count]) => {
           if (count > 0) {
             const firstExercise = exerciseLibrary[muscle]?.[0];
@@ -441,6 +351,99 @@ function App() {
     );
   }
 
+  // Settings View
+  if (view === 'settings') {
+    return (
+      <div className="min-h-screen bg-white text-black font-mono">
+        <div className="flex items-center justify-between p-4 border-b-2 border-black">
+          <button 
+            onClick={() => setView('home')}
+            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl font-bold">SETTINGS</h1>
+          <div className="w-6"></div>
+        </div>
+
+        <div className="p-4 space-y-8">
+          {/* Toggles Section */}
+          <div>
+            <h2 className="font-bold text-lg mb-4 text-gray-700">PREFERENCES</h2>
+            
+            {/* Reps Tracking Toggle */}
+            <div className="border-2 border-black p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-lg">Reps Tracking</div>
+                  <div className="text-sm text-gray-700">Track individual reps per set</div>
+                </div>
+                <button
+                  onClick={() => updateSettings('repsTracking', !appData.settings.repsTracking)}
+                  className={`w-16 h-8 border-2 border-black transition-colors flex items-center ${
+                    appData.settings.repsTracking ? 'bg-black justify-end' : 'bg-white justify-start'
+                  }`}
+                >
+                  <div
+                    className={`w-6 h-6 border-2 border-black transition-colors ${
+                      appData.settings.repsTracking ? 'bg-white' : 'bg-black'
+                    }`}
+                    style={{ margin: '1px' }}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Management Section */}
+          <div className="mt-8">
+            <h2 className="font-bold text-lg mb-4 text-gray-700">MANAGEMENT</h2>
+            
+            <div className="space-y-4">
+              {/* Manage Exercises */}
+              <div className="border-2 border-black p-4">
+                <div className="mb-3">
+                  <div className="font-bold text-lg">Manage Exercises</div>
+                  <div className="text-sm text-gray-700">Add or remove custom exercises</div>
+                </div>
+                <button
+                  onClick={() => alert('Exercise management coming in Phase 3!')}
+                  className="w-full bg-white text-black py-3 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
+                >
+                  MANAGE EXERCISES
+                </button>
+              </div>
+
+              {/* Export Data */}
+              <div className="border-2 border-black p-4">
+                <div className="mb-3">
+                  <div className="font-bold text-lg">Export Data</div>
+                  <div className="text-sm text-gray-700">Download workout history as CSV</div>
+                </div>
+                <button
+                  onClick={exportToCSV}
+                  className="w-full bg-black text-white py-3 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px] flex items-center justify-center gap-2"
+                >
+                  <Download size={20} />
+                  DOWNLOAD CSV
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* App Information */}
+          <div className="mt-8 pt-8 border-t-2 border-gray-300">
+            <div className="text-center text-sm text-gray-700 space-y-1">
+              <div className="font-bold">Strength Tracker MVP3</div>
+              <div>{appData.workouts.length} workouts logged</div>
+              <div>Data stored locally</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Home View
   if (view === 'home') {
     const recentWorkouts = getRecentWorkouts();
@@ -498,7 +501,6 @@ function App() {
                       {getWorkoutSummary(workout)}
                     </div>
                     
-                    {/* Muscle Group Drill-down */}
                     {workout.exercises && (
                       <div className="grid grid-cols-2 gap-2 text-sm">
                         {muscleGroups.map(muscle => {
@@ -627,7 +629,12 @@ function App() {
   return (
     <div className="min-h-screen bg-white text-black font-mono">
       <div className="flex items-center justify-between p-4 border-b-2 border-black">
-        <Menu size={24} className="text-black" />
+        <button 
+          onClick={() => setView('settings')}
+          className="p-2 hover:bg-gray-100 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+        >
+          <Menu size={24} className="text-black" />
+        </button>
         <h1 className="text-xl font-bold">TODAY'S WORKOUT</h1>
         <div className="w-6"></div>
       </div>

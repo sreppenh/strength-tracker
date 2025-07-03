@@ -141,6 +141,14 @@ body {
   margin-bottom: 2rem;
 }
 
+.pt-8 {
+  padding-top: 2rem;
+}
+
+.mt-8 {
+  margin-top: 2rem;
+}
+
 /* Grid */
 .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
