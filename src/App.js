@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Plus, Home } from 'lucide-react';
 import './App.css';
 
@@ -14,11 +14,85 @@ function App() {
     core: ["Leg Raises", "Sit-Ups", "Ab Wheel", "Russian Twists", "Core General"]
   };
 
-  const [workouts, setWorkouts] = useState([]);
+  // Local Storage Functions
+  const loadFromStorage = () => {
+    try {
+      const stored = localStorage.getItem('strengthTracker');
+      if (stored) {
+        const data = JSON.parse(stored);
+        console.log('Loaded data from localStorage:', data);
+        return data;
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+    }
+    return { workouts: [], settings: { repsTracking: false, customExercises: {} } };
+  };
+
+  const saveToStorage = (data) => {
+    try {
+      localStorage.setItem('strengthTracker', JSON.stringify(data));
+      console.log('Saved data to localStorage:', data);
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+      // TODO: Handle quota exceeded or other storage errors
+    }
+  };
+
+  // Migrate MVP2 data to MVP3 format
+  const migrateData = (workouts) => {
+    return workouts.map(workout => {
+      // If workout already has the new format, return as-is
+      if (workout.exercises && typeof Object.values(workout.exercises)[0] === 'object') {
+        return workout;
+      }
+      
+      // Convert MVP2 format to MVP3 format
+      const migratedExercises = {};
+      if (workout.exercises) {
+        Object.entries(workout.exercises).forEach(([exercise, count]) => {
+          if (typeof count === 'number' && count > 0) {
+            migratedExercises[exercise] = count; // Keep simple count for now
+          }
+        });
+      } else if (workout.muscleGroups) {
+        // Handle very old MVP1 format - convert to exercises
+        Object.entries(workout.muscleGroups).forEach(([muscle, count]) => {
+          if (count > 0) {
+            const firstExercise = exerciseLibrary[muscle]?.[0];
+            if (firstExercise) {
+              migratedExercises[firstExercise] = count;
+            }
+          }
+        });
+      }
+      
+      return {
+        ...workout,
+        exercises: migratedExercises
+      };
+    });
+  };
+
+  // Initialize state from localStorage
+  const [appData, setAppData] = useState(() => {
+    const data = loadFromStorage();
+    const migratedWorkouts = migrateData(data.workouts || []);
+    return {
+      workouts: migratedWorkouts,
+      settings: data.settings || { repsTracking: false, customExercises: {} }
+    };
+  });
+
   const [currentWorkout, setCurrentWorkout] = useState({});
   const [currentMuscleGroup, setCurrentMuscleGroup] = useState(null);
   const [view, setView] = useState('home');
   const [selectedHistoryWorkout, setSelectedHistoryWorkout] = useState(null);
+
+  // Save to localStorage whenever appData changes
+  useEffect(() => {
+    saveToStorage(appData);
+  }, [appData]);
 
   const muscleGroups = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'core'];
 
@@ -51,7 +125,7 @@ function App() {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    return workouts
+    return appData.workouts
       .filter(workout => new Date(workout.date) >= sevenDaysAgo)
       .sort((a, b) => new Date(b.date) - new Date(a.date))
       .slice(0, 7);
@@ -75,7 +149,8 @@ function App() {
             exerciseLibrary[muscleGroup].includes(exercise)
           );
           if (muscle) {
-            totals[muscle] += sets;
+            const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
+            totals[muscle] += setCount;
           }
         });
       }
@@ -102,7 +177,8 @@ function App() {
           exerciseLibrary[muscleGroup].includes(exercise)
         );
         if (muscle) {
-          muscleGroupTotals[muscle] += sets;
+          const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
+          muscleGroupTotals[muscle] += setCount;
         }
       });
       
@@ -119,10 +195,21 @@ function App() {
     
     const exercises = exerciseLibrary[muscleGroup];
     return exercises
-      .map(exercise => ({
-        name: exercise,
-        sets: workoutData.exercises[exercise] || 0
-      }))
+      .map(exercise => {
+        const exerciseData = workoutData.exercises[exercise];
+        let sets = 0;
+        
+        if (typeof exerciseData === 'number') {
+          sets = exerciseData;
+        } else if (Array.isArray(exerciseData)) {
+          sets = exerciseData.length;
+        }
+        
+        return {
+          name: exercise,
+          sets: sets
+        };
+      })
       .filter(exercise => exercise.sets > 0);
   };
 
@@ -147,7 +234,10 @@ function App() {
       exercises: { ...currentWorkout }
     };
     
-    setWorkouts(prev => [...prev, newWorkout]);
+    setAppData(prev => ({
+      ...prev,
+      workouts: [...prev.workouts, newWorkout]
+    }));
     setCurrentWorkout({});
     setView('home');
   };
