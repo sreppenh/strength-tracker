@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Menu, Plus, Home } from 'lucide-react';
+import { Menu, Plus, Home, Settings, Download, ArrowLeft } from 'lucide-react';
+import './App.css';import React, { useState, useEffect } from 'react';
+import { Menu, Plus, Home, Settings, Download, ArrowLeft } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -12,6 +14,93 @@ function App() {
     triceps: ["Skull Crushers", "Overhead Lift", "Bench Dips", "Triceps General"],
     legs: ["Squats", "Deadlifts", "Legs General"],
     core: ["Leg Raises", "Sit-Ups", "Ab Wheel", "Russian Twists", "Core General"]
+  }
+
+  // Settings View
+  if (view === 'settings') {
+    return (
+      <div className="min-h-screen bg-white text-black font-mono">
+        <div className="flex items-center justify-between p-4 border-b-2 border-black">
+          <button 
+            onClick={() => setView('home')}
+            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl font-bold">SETTINGS</h1>
+          <div className="w-6"></div>
+        </div>
+
+        <div className="p-4 space-y-6">
+          {/* Reps Tracking Toggle */}
+          <div className="border-2 border-black p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-lg">Reps Tracking</div>
+                <div className="text-sm text-gray-700">Track individual reps per set</div>
+              </div>
+              <button
+                onClick={() => updateSettings('repsTracking', !appData.settings.repsTracking)}
+                className={`w-16 h-8 rounded-full border-2 border-black transition-colors ${
+                  appData.settings.repsTracking ? 'bg-black' : 'bg-white'
+                }`}
+              >
+                <div
+                  className={`w-6 h-6 rounded-full border border-black transition-transform ${
+                    appData.settings.repsTracking 
+                      ? 'translate-x-8 bg-white' 
+                      : 'translate-x-1 bg-black'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Manage Exercises */}
+          <div className="border-2 border-black p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-lg">Manage Exercises</div>
+                <div className="text-sm text-gray-700">Add or remove custom exercises</div>
+              </div>
+              <button
+                onClick={() => alert('Exercise management coming in Phase 3!')}
+                className="bg-white text-black px-4 py-2 border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
+              >
+                MANAGE
+              </button>
+            </div>
+          </div>
+
+          {/* Export Data */}
+          <div className="border-2 border-black p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="font-bold text-lg">Export Data</div>
+                <div className="text-sm text-gray-700">Download workout history as CSV</div>
+              </div>
+              <button
+                onClick={exportToCSV}
+                className="bg-black text-white px-4 py-2 border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px] flex items-center gap-2"
+              >
+                <Download size={16} />
+                CSV
+              </button>
+            </div>
+          </div>
+
+          {/* App Info */}
+          <div className="border-2 border-black p-4">
+            <div className="font-bold text-lg mb-2">App Information</div>
+            <div className="text-sm text-gray-700 space-y-1">
+              <div>Version: MVP3 Phase 2</div>
+              <div>Workouts Logged: {appData.workouts.length}</div>
+              <div>Data Storage: localStorage</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   // Local Storage Functions
@@ -260,6 +349,52 @@ function App() {
     return Object.values(currentWorkout).some(sets => sets > 0);
   };
 
+  // CSV Export Function
+  const exportToCSV = () => {
+    const csvData = [];
+    csvData.push(['Date', 'Exercise', 'Muscle Group', 'Set', 'Reps']);
+    
+    appData.workouts.forEach(workout => {
+      Object.entries(workout.exercises).forEach(([exercise, data]) => {
+        const muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
+          exerciseLibrary[muscleGroup].includes(exercise)
+        );
+        
+        if (typeof data === 'number') {
+          // Simple set count format
+          for (let i = 1; i <= data; i++) {
+            csvData.push([workout.date, exercise, muscle, i, '']);
+          }
+        } else if (Array.isArray(data)) {
+          // Detailed reps format (future)
+          data.forEach((setData, index) => {
+            csvData.push([workout.date, exercise, muscle, index + 1, setData.reps || '']);
+          });
+        }
+      });
+    });
+    
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `strength-tracker-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  // Update Settings Function
+  const updateSettings = (key, value) => {
+    setAppData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        [key]: value
+      }
+    }));
+  };
+
   // History Drill-down View
   if (view === 'home' && selectedHistoryWorkout) {
     const { workout, muscle } = selectedHistoryWorkout;
@@ -313,7 +448,12 @@ function App() {
     return (
       <div className="min-h-screen bg-white text-black font-mono">
         <div className="flex items-center justify-between p-4 border-b-2 border-black">
-          <Menu size={24} className="text-black" />
+          <button
+            onClick={() => setView('settings')}
+            className="p-2 hover:bg-gray-100 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <Menu size={24} className="text-black" />
+          </button>
           <h1 className="text-xl font-bold">STRENGTH TRACKER</h1>
           <div className="w-6"></div>
         </div>
