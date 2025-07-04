@@ -26,7 +26,7 @@ function App() {
     } catch (error) {
       console.error('Error loading from localStorage:', error);
     }
-    return { workouts: [], settings: { repsTracking: false, customExercises: {} } };
+    return { workouts: [], settings: { repsTracking: false, customExercises: {}, hiddenExercises: {} } };
   };
 
   const saveToStorage = (data) => {
@@ -76,7 +76,12 @@ function App() {
     const migratedWorkouts = migrateData(data.workouts || []);
     return {
       workouts: migratedWorkouts,
-      settings: data.settings || { repsTracking: false, customExercises: {} }
+      settings: {
+        repsTracking: false,
+        customExercises: {},
+        hiddenExercises: {},
+        ...data.settings
+      }
     };
   });
 
@@ -85,6 +90,12 @@ function App() {
   const [view, setView] = useState('home');
   const [selectedHistoryWorkout, setSelectedHistoryWorkout] = useState(null);
   const [repsEntry, setRepsEntry] = useState(null);
+  const [exerciseManagement, setExerciseManagement] = useState({
+    muscleGroup: null,
+    newExerciseName: '',
+    showAddForm: false,
+    deleteConfirmation: null
+  });
 
   // Save to localStorage whenever appData changes
   useEffect(() => {
@@ -95,9 +106,136 @@ function App() {
 
   const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
+  // Check if an exercise has historical data
+  const exerciseHasHistory = (exerciseName) => {
+    return appData.workouts.some(workout => 
+      workout.exercises && workout.exercises[exerciseName]
+    );
+  };
+
+  // Get all custom exercises for a muscle group
+  const getCustomExercises = (muscleGroup) => {
+    return appData.settings.customExercises[muscleGroup] || [];
+  };
+
+  // Get visible default exercises (excluding hidden ones)
+  const getVisibleDefaultExercises = (muscleGroup) => {
+    const hiddenExercises = appData.settings.hiddenExercises?.[muscleGroup] || [];
+    return exerciseLibrary[muscleGroup].filter(ex => !hiddenExercises.includes(ex));
+  };
+
+  // Get hidden default exercises
+  const getHiddenDefaultExercises = (muscleGroup) => {
+    return appData.settings.hiddenExercises?.[muscleGroup] || [];
+  };
+
+  // Get combined exercise library (default + custom - hidden)
+  const getCombinedExerciseLibrary = () => {
+    const combined = {};
+    
+    Object.keys(exerciseLibrary).forEach(muscleGroup => {
+      const defaultExercises = exerciseLibrary[muscleGroup];
+      const customExercises = appData.settings.customExercises[muscleGroup] || [];
+      const hiddenExercises = appData.settings.hiddenExercises?.[muscleGroup] || [];
+      
+      // Filter out hidden exercises from defaults
+      const visibleDefaults = defaultExercises.filter(ex => !hiddenExercises.includes(ex));
+      
+      combined[muscleGroup] = [...visibleDefaults, ...customExercises];
+    });
+    
+    return combined;
+  };
+
+  // Add a custom exercise
+  const addCustomExercise = (muscleGroup, exerciseName) => {
+    const trimmedName = exerciseName.trim();
+    if (!trimmedName) return false;
+    
+    const combinedLibrary = getCombinedExerciseLibrary();
+    
+    // Check if exercise already exists
+    if (combinedLibrary[muscleGroup].includes(trimmedName)) {
+      return false;
+    }
+    
+    setAppData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        customExercises: {
+          ...prev.settings.customExercises,
+          [muscleGroup]: [...(prev.settings.customExercises[muscleGroup] || []), trimmedName]
+        }
+      }
+    }));
+    
+    return true;
+  };
+
+  // Remove a default or custom exercise
+  const removeExercise = (muscleGroup, exerciseName) => {
+    const isDefault = exerciseLibrary[muscleGroup].includes(exerciseName);
+    const isGeneral = exerciseName.includes('General');
+    
+    // Don't allow removal of "General" exercises
+    if (isGeneral) {
+      alert('General exercises cannot be removed');
+      return false;
+    }
+    
+    const hasHistory = exerciseHasHistory(exerciseName);
+    
+    if (isDefault) {
+      // For default exercises, add to a "hidden" list
+      setAppData(prev => ({
+        ...prev,
+        settings: {
+          ...prev.settings,
+          hiddenExercises: {
+            ...prev.settings.hiddenExercises,
+            [muscleGroup]: [...(prev.settings.hiddenExercises?.[muscleGroup] || []), exerciseName]
+          }
+        }
+      }));
+    } else {
+      // For custom exercises, remove from custom list
+      setAppData(prev => ({
+        ...prev,
+        settings: {
+          ...prev.settings,
+          customExercises: {
+            ...prev.settings.customExercises,
+            [muscleGroup]: (prev.settings.customExercises[muscleGroup] || []).filter(ex => ex !== exerciseName)
+          }
+        }
+      }));
+    }
+    
+    // Close the confirmation modal
+    setExerciseManagement(prev => ({ ...prev, deleteConfirmation: null }));
+    
+    return hasHistory;
+  };
+
+  // Restore a hidden default exercise
+  const restoreDefaultExercise = (muscleGroup, exerciseName) => {
+    setAppData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        hiddenExercises: {
+          ...prev.settings.hiddenExercises,
+          [muscleGroup]: (prev.settings.hiddenExercises?.[muscleGroup] || []).filter(ex => ex !== exerciseName)
+        }
+      }
+    }));
+  };
+
   // Calculate muscle group totals from exercise data
   const getMuscleGroupTotal = (muscleGroup) => {
-    const exercises = exerciseLibrary[muscleGroup];
+    const combinedLibrary = getCombinedExerciseLibrary();
+    const exercises = combinedLibrary[muscleGroup];
     return exercises.reduce((total, exercise) => {
       const exerciseData = currentWorkout[exercise];
       if (Array.isArray(exerciseData)) {
@@ -195,7 +333,8 @@ function App() {
   const getExerciseBreakdown = (workoutData, muscleGroup) => {
     if (!workoutData.exercises) return [];
     
-    const exercises = exerciseLibrary[muscleGroup];
+    const combinedLibrary = getCombinedExerciseLibrary();
+    const exercises = combinedLibrary[muscleGroup];
     return exercises
       .map(exercise => {
         const exerciseData = workoutData.exercises[exercise];
@@ -361,10 +500,12 @@ function App() {
     const csvData = [];
     csvData.push(['Date', 'Exercise', 'Muscle Group', 'Set', 'Reps']);
     
+    const combinedLibrary = getCombinedExerciseLibrary();
+    
     appData.workouts.forEach(workout => {
       Object.entries(workout.exercises).forEach(([exercise, data]) => {
-        const muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
-          exerciseLibrary[muscleGroup].includes(exercise)
+        const muscle = Object.keys(combinedLibrary).find(muscleGroup =>
+          combinedLibrary[muscleGroup].includes(exercise)
         );
         
         if (typeof data === 'number') {
@@ -445,6 +586,304 @@ function App() {
     );
   }
 
+  // Exercise Management View
+  if (view === 'exercise-management') {
+    // If no muscle group selected, show muscle group selection
+    if (!exerciseManagement.muscleGroup) {
+      return (
+        <div className="min-h-screen bg-white text-black font-mono">
+          <div className="flex items-center justify-between p-4 border-b-2 border-black">
+            <button 
+              onClick={() => setView('settings')}
+              className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-xl font-bold">MANAGE EXERCISES</h1>
+            <div className="w-6"></div>
+          </div>
+
+          <div className="p-4">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold mb-2">Select Muscle Group</h2>
+              <div className="text-sm text-gray-700 mb-4">Choose a muscle group to add or remove exercises</div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {muscleGroups.map(muscle => {
+                const customCount = getCustomExercises(muscle).length;
+                const hiddenCount = getHiddenDefaultExercises(muscle).length;
+                const totalVisible = getCombinedExerciseLibrary()[muscle].length;
+                return (
+                  <button
+                    key={muscle}
+                    onClick={() => setExerciseManagement(prev => ({ ...prev, muscleGroup: muscle }))}
+                    className="border-2 border-black p-4 bg-white text-black hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="text-lg font-bold">{capitalizeFirst(muscle)}</div>
+                    <div className="text-sm text-gray-700">
+                      {totalVisible} active exercise{totalVisible !== 1 ? 's' : ''}
+                      {customCount > 0 && <div>{customCount} custom</div>}
+                      {hiddenCount > 0 && <div>{hiddenCount} hidden</div>}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Exercise management for specific muscle group
+    const combinedLibrary = getCombinedExerciseLibrary();
+    const allExercises = combinedLibrary[exerciseManagement.muscleGroup];
+    const visibleDefaults = getVisibleDefaultExercises(exerciseManagement.muscleGroup);
+    const hiddenDefaults = getHiddenDefaultExercises(exerciseManagement.muscleGroup);
+    const customExercises = getCustomExercises(exerciseManagement.muscleGroup);
+
+    return (
+      <div className="min-h-screen bg-white text-black font-mono">
+        <div className="flex items-center justify-between p-4 border-b-2 border-black">
+          <button 
+            onClick={() => setExerciseManagement(prev => ({ ...prev, muscleGroup: null, showAddForm: false, newExerciseName: '' }))}
+            className="text-lg font-bold hover:bg-gray-100 p-2 border-2 border-black min-h-[44px] min-w-[44px] flex items-center justify-center"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h1 className="text-xl font-bold">{capitalizeFirst(exerciseManagement.muscleGroup).toUpperCase()}</h1>
+          <div className="w-6"></div>
+        </div>
+
+        <div className="p-4">
+          {/* Add Exercise Section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-4">Add New Exercise</h2>
+            
+            {!exerciseManagement.showAddForm ? (
+              <button
+                onClick={() => setExerciseManagement(prev => ({ ...prev, showAddForm: true }))}
+                className="w-full bg-black text-white py-3 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px] flex items-center justify-center gap-2"
+              >
+                <Plus size={20} />
+                ADD EXERCISE
+              </button>
+            ) : (
+              <div className="border-2 border-black p-4">
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    value={exerciseManagement.newExerciseName}
+                    onChange={(e) => setExerciseManagement(prev => ({ ...prev, newExerciseName: e.target.value }))}
+                    placeholder="Enter exercise name"
+                    className="w-full p-3 border-2 border-black font-mono text-lg"
+                    autoFocus
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const success = addCustomExercise(exerciseManagement.muscleGroup, exerciseManagement.newExerciseName);
+                      if (success) {
+                        setExerciseManagement(prev => ({ ...prev, showAddForm: false, newExerciseName: '' }));
+                      } else {
+                        alert('Exercise name already exists or is invalid');
+                      }
+                    }}
+                    className="flex-1 bg-black text-white py-3 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px]"
+                  >
+                    SAVE
+                  </button>
+                  <button
+                    onClick={() => setExerciseManagement(prev => ({ ...prev, showAddForm: false, newExerciseName: '' }))}
+                    className="flex-1 bg-white text-black py-3 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Visible Default Exercises Section */}
+          <div className="mb-8">
+            <h2 className="text-lg font-bold mb-4">Default Exercises</h2>
+            <div className="space-y-3">
+              {visibleDefaults.map(exercise => {
+                const isGeneral = exercise.includes('General');
+                const hasHistory = exerciseHasHistory(exercise);
+                return (
+                  <div key={exercise} className="border-2 border-gray-300 p-4 bg-gray-50 flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-bold text-lg">{exercise}</div>
+                      <div className="text-sm text-gray-600">
+                        Built-in{hasHistory ? ' • Has workout history' : ''}
+                      </div>
+                    </div>
+                    {!isGeneral && (
+                      <button
+                        onClick={() => setExerciseManagement(prev => ({ 
+                          ...prev, 
+                          deleteConfirmation: { 
+                            exerciseName: exercise, 
+                            muscleGroup: exerciseManagement.muscleGroup,
+                            hasHistory: hasHistory,
+                            isDefault: true
+                          } 
+                        }))}
+                        className="w-12 h-12 bg-white text-black border-2 border-black hover:bg-gray-100 transition-colors flex items-center justify-center ml-4"
+                        title="Remove exercise"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Custom Exercises Section */}
+          {customExercises.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-bold mb-4">Custom Exercises</h2>
+              <div className="space-y-3">
+                {customExercises.map(exercise => {
+                  const hasHistory = exerciseHasHistory(exercise);
+                  return (
+                    <div key={exercise} className="border-2 border-black p-4 bg-white flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-bold text-lg">{exercise}</div>
+                        <div className="text-sm text-gray-600">
+                          Custom{hasHistory ? ' • Has workout history' : ''}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setExerciseManagement(prev => ({ 
+                          ...prev, 
+                          deleteConfirmation: { 
+                            exerciseName: exercise, 
+                            muscleGroup: exerciseManagement.muscleGroup,
+                            hasHistory: hasHistory,
+                            isDefault: false
+                          } 
+                        }))}
+                        className="w-12 h-12 bg-white text-black border-2 border-black hover:bg-gray-100 transition-colors flex items-center justify-center ml-4"
+                        title="Remove exercise"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Hidden Default Exercises Section */}
+          {hiddenDefaults.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-lg font-bold mb-4">Hidden Exercises</h2>
+              <div className="text-sm text-gray-600 mb-4">These exercises are hidden from workouts but can be restored</div>
+              <div className="space-y-3">
+                {hiddenDefaults.map(exercise => {
+                  const hasHistory = exerciseHasHistory(exercise);
+                  return (
+                    <div key={exercise} className="border-2 border-gray-400 p-4 bg-gray-100 flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-bold text-lg text-gray-600">{exercise}</div>
+                        <div className="text-sm text-gray-500">
+                          Hidden{hasHistory ? ' • Has workout history' : ''}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => restoreDefaultExercise(exerciseManagement.muscleGroup, exercise)}
+                        className="w-12 h-12 bg-black text-white border-2 border-black hover:bg-white hover:text-black transition-colors flex items-center justify-center ml-4"
+                        title="Restore exercise"
+                      >
+                        +
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Delete Confirmation Modal */}
+        {exerciseManagement.deleteConfirmation && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
+            style={{ zIndex: 9999 }}
+          >
+            <div 
+              className="bg-white border-4 border-black p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-bold text-xl mb-4 text-center">
+                Remove Exercise
+              </h3>
+              
+              <div className="mb-6">
+                <div className="text-center mb-4">
+                  <div className="font-bold text-lg">
+                    {exerciseManagement.deleteConfirmation.exerciseName}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    {exerciseManagement.deleteConfirmation.isDefault ? 'Default' : 'Custom'} exercise
+                  </div>
+                </div>
+                
+                <div className="border-2 border-gray-300 p-4 bg-gray-50 mb-4">
+                  {exerciseManagement.deleteConfirmation.hasHistory ? (
+                    <div className="text-sm">
+                      <div className="font-bold mb-2">⚠️ This exercise has workout history</div>
+                      <div>
+                        {exerciseManagement.deleteConfirmation.isDefault 
+                          ? "It will be hidden from future workouts but your historical data will be preserved."
+                          : "It will be removed from your custom exercises but your historical data will be preserved."
+                        }
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm">
+                      <div className="font-bold mb-2">No workout history</div>
+                      <div>
+                        {exerciseManagement.deleteConfirmation.isDefault 
+                          ? "This exercise will be hidden from future workouts."
+                          : "This exercise will be completely removed."
+                        }
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    const { exerciseName, muscleGroup } = exerciseManagement.deleteConfirmation;
+                    removeExercise(muscleGroup, exerciseName);
+                  }}
+                  className="w-full bg-black text-white py-4 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px]"
+                >
+                  YES, REMOVE EXERCISE
+                </button>
+                <button
+                  onClick={() => setExerciseManagement(prev => ({ ...prev, deleteConfirmation: null }))}
+                  className="w-full bg-white text-black py-4 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
+                >
+                  CANCEL
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   // Settings View
   if (view === 'settings') {
     return (
@@ -497,7 +936,7 @@ function App() {
                   <div className="text-sm text-gray-700">Add or remove custom exercises</div>
                 </div>
                 <button
-                  onClick={() => alert('Exercise management coming soon!')}
+                  onClick={() => setView('exercise-management')}
                   className="w-full bg-white text-black py-3 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
                 >
                   MANAGE EXERCISES
@@ -628,7 +1067,8 @@ function App() {
 
   // Exercise Selection View
   if (view === 'exercises' && currentMuscleGroup) {
-    const exercises = exerciseLibrary[currentMuscleGroup];
+    const combinedLibrary = getCombinedExerciseLibrary();
+    const exercises = combinedLibrary[currentMuscleGroup];
     
     return (
       <div className="min-h-screen bg-white text-black font-mono">

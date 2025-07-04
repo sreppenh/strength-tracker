@@ -370,6 +370,57 @@ button.w-20.h-20 {
   transition: all 0.15s ease;
 }
 
+/* Input Styling */
+input[type="text"] {
+  font-family: 'Courier New', monospace;
+  outline: none;
+}
+
+input[type="text"]:focus {
+  background-color: #f9f9f9;
+}
+
+/* Additional utility classes */
+.flex-1 {
+  flex: 1;
+}
+
+.bg-gray-50 {
+  background-color: #f9fafb;
+}
+
+.bg-gray-100 {
+  background-color: #f3f4f6;
+}
+
+.text-gray-500 {
+  color: #6b7280;
+}
+
+.text-gray-600 {
+  color: #4b5563;
+}
+
+.border-gray-300 {
+  border-color: #d1d5db;
+}
+
+.border-gray-400 {
+  border-color: #9ca3af;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.ml-4 {
+  margin-left: 1rem;
+}
+
+.space-y-3 > * + * {
+  margin-top: 0.75rem;
+}
+
 /* Mobile Optimization */
 @media (max-width: 767px) {
   .p-4 {
