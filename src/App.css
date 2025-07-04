@@ -272,10 +272,80 @@ button:hover {
 
 /* CRITICAL: Icon Button Centering Fix */
 button.w-12.h-12,
-button.w-12.h-8 {
+button.w-12.h-8,
+button.w-20.h-20 {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+
+/* Reps Modal Button Styling */
+.reps-modal-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-weight: bold !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* Modal Overlay Improvements */
+.fixed.inset-0 {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+}
+
+/* Modal Content Styling */
+.bg-opacity-75 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Large Button Sizes for Modal */
+.w-24 {
+  width: 6rem !important;
+}
+
+.h-24 {
+  height: 6rem !important;
+}
+
+.text-8xl {
+  font-size: 6rem !important;
+  line-height: 1 !important;
+}
+
+.text-4xl {
+  font-size: 2.25rem !important;
+  line-height: 2.5rem !important;
+}
+
+.min-h-\[60px\] {
+  min-height: 60px !important;
+}
+
+.max-w-md {
+  max-width: 28rem !important;
+}
+
+.gap-8 {
+  gap: 2rem !important;
+}
+
+.p-6 {
+  padding: 1.5rem !important;
+}
+
+.p-8 {
+  padding: 2rem !important;
 }
 
 /* Ensure all flex buttons center their content */

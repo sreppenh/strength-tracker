@@ -41,12 +41,10 @@ function App() {
   // Migrate MVP2 data to MVP3 format
   const migrateData = (workouts) => {
     return workouts.map(workout => {
-      // If workout already has the new format, return as-is
       if (workout.exercises && typeof Object.values(workout.exercises)[0] === 'object') {
         return workout;
       }
       
-      // Convert MVP2 format to MVP3 format
       const migratedExercises = {};
       if (workout.exercises) {
         Object.entries(workout.exercises).forEach(([exercise, count]) => {
@@ -55,7 +53,6 @@ function App() {
           }
         });
       } else if (workout.muscleGroups) {
-        // Handle very old MVP1 format
         Object.entries(workout.muscleGroups).forEach(([muscle, count]) => {
           if (count > 0) {
             const firstExercise = exerciseLibrary[muscle]?.[0];
@@ -87,6 +84,7 @@ function App() {
   const [currentMuscleGroup, setCurrentMuscleGroup] = useState(null);
   const [view, setView] = useState('home');
   const [selectedHistoryWorkout, setSelectedHistoryWorkout] = useState(null);
+  const [repsEntry, setRepsEntry] = useState(null);
 
   // Save to localStorage whenever appData changes
   useEffect(() => {
@@ -101,7 +99,12 @@ function App() {
   const getMuscleGroupTotal = (muscleGroup) => {
     const exercises = exerciseLibrary[muscleGroup];
     return exercises.reduce((total, exercise) => {
-      return total + (currentWorkout[exercise] || 0);
+      const exerciseData = currentWorkout[exercise];
+      if (Array.isArray(exerciseData)) {
+        return total + exerciseData.length;
+      } else {
+        return total + (exerciseData || 0);
+      }
     }, 0);
   };
 
@@ -212,18 +215,108 @@ function App() {
       .filter(exercise => exercise.sets > 0);
   };
 
+  const getLastReps = (exercise) => {
+    // First, check if we have reps data from the current workout session
+    const currentExerciseData = currentWorkout[exercise];
+    if (Array.isArray(currentExerciseData) && currentExerciseData.length > 0) {
+      const lastSetInCurrentWorkout = currentExerciseData[currentExerciseData.length - 1];
+      if (lastSetInCurrentWorkout.reps) {
+        return lastSetInCurrentWorkout.reps;
+      }
+    }
+    
+    // If no current workout data, check recent workouts
+    const recentWorkouts = appData.workouts.slice(-5);
+    
+    for (let i = recentWorkouts.length - 1; i >= 0; i--) {
+      const workout = recentWorkouts[i];
+      if (workout.exercises && workout.exercises[exercise]) {
+        const exerciseData = workout.exercises[exercise];
+        if (Array.isArray(exerciseData) && exerciseData.length > 0) {
+          const lastSet = exerciseData[exerciseData.length - 1];
+          return lastSet.reps || 8;
+        }
+      }
+    }
+    
+    // Default fallback
+    return 8;
+  };
+
   const incrementSet = (exercise) => {
-    setCurrentWorkout(prev => ({
-      ...prev,
-      [exercise]: (prev[exercise] || 0) + 1
-    }));
+    console.log('incrementSet called for:', exercise, 'repsTracking:', appData.settings.repsTracking);
+    
+    if (appData.settings.repsTracking) {
+      const lastReps = getLastReps(exercise);
+      console.log('Opening reps entry with lastReps:', lastReps);
+      setRepsEntry({
+        exercise: exercise,
+        currentReps: lastReps
+      });
+    } else {
+      console.log('Simple increment mode');
+      setCurrentWorkout(prev => ({
+        ...prev,
+        [exercise]: (prev[exercise] || 0) + 1
+      }));
+    }
+  };
+
+  const saveSetWithReps = (reps) => {
+    if (!repsEntry) return;
+    
+    const { exercise } = repsEntry;
+    setCurrentWorkout(prev => {
+      const currentData = prev[exercise];
+      let newData;
+      
+      if (Array.isArray(currentData)) {
+        newData = [...currentData, { set: currentData.length + 1, reps: reps }];
+      } else if (typeof currentData === 'number') {
+        const existingSets = [];
+        for (let i = 1; i <= currentData; i++) {
+          existingSets.push({ set: i, reps: getLastReps(exercise) });
+        }
+        newData = [...existingSets, { set: currentData + 1, reps: reps }];
+      } else {
+        newData = [{ set: 1, reps: reps }];
+      }
+      
+      return {
+        ...prev,
+        [exercise]: newData
+      };
+    });
+    
+    setRepsEntry(null);
   };
 
   const decrementSet = (exercise) => {
-    setCurrentWorkout(prev => ({
-      ...prev,
-      [exercise]: Math.max(0, (prev[exercise] || 0) - 1)
-    }));
+    setCurrentWorkout(prev => {
+      const currentData = prev[exercise];
+      
+      if (Array.isArray(currentData)) {
+        if (currentData.length > 1) {
+          return {
+            ...prev,
+            [exercise]: currentData.slice(0, -1)
+          };
+        } else {
+          const { [exercise]: removed, ...rest } = prev;
+          return rest;
+        }
+      } else {
+        const newCount = Math.max(0, (currentData || 0) - 1);
+        if (newCount === 0) {
+          const { [exercise]: removed, ...rest } = prev;
+          return rest;
+        }
+        return {
+          ...prev,
+          [exercise]: newCount
+        };
+      }
+    });
   };
 
   const finishWorkout = () => {
@@ -259,7 +352,6 @@ function App() {
     return Object.values(currentWorkout).some(sets => sets > 0);
   };
 
-  // CSV Export Function
   const exportToCSV = () => {
     const csvData = [];
     csvData.push(['Date', 'Exercise', 'Muscle Group', 'Set', 'Reps']);
@@ -271,12 +363,10 @@ function App() {
         );
         
         if (typeof data === 'number') {
-          // Simple set count format
           for (let i = 1; i <= data; i++) {
             csvData.push([workout.date, exercise, muscle, i, '']);
           }
         } else if (Array.isArray(data)) {
-          // Detailed reps format (future)
           data.forEach((setData, index) => {
             csvData.push([workout.date, exercise, muscle, index + 1, setData.reps || '']);
           });
@@ -294,7 +384,6 @@ function App() {
     window.URL.revokeObjectURL(url);
   };
 
-  // Update Settings Function
   const updateSettings = (key, value) => {
     setAppData(prev => ({
       ...prev,
@@ -367,11 +456,9 @@ function App() {
         </div>
 
         <div className="p-4 space-y-8">
-          {/* Toggles Section */}
           <div>
             <h2 className="font-bold text-lg mb-4 text-gray-700">PREFERENCES</h2>
             
-            {/* Reps Tracking Toggle */}
             <div className="border-2 border-black p-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -395,26 +482,23 @@ function App() {
             </div>
           </div>
 
-          {/* Management Section */}
           <div className="mt-8">
             <h2 className="font-bold text-lg mb-4 text-gray-700">MANAGEMENT</h2>
             
             <div className="space-y-4">
-              {/* Manage Exercises */}
               <div className="border-2 border-black p-4">
                 <div className="mb-3">
                   <div className="font-bold text-lg">Manage Exercises</div>
                   <div className="text-sm text-gray-700">Add or remove custom exercises</div>
                 </div>
                 <button
-                  onClick={() => alert('Exercise management coming in Phase 3!')}
+                  onClick={() => alert('Exercise management coming soon!')}
                   className="w-full bg-white text-black py-3 text-lg font-bold border-2 border-black hover:bg-gray-100 transition-colors min-h-[44px]"
                 >
                   MANAGE EXERCISES
                 </button>
               </div>
 
-              {/* Export Data */}
               <div className="border-2 border-black p-4">
                 <div className="mb-3">
                   <div className="font-bold text-lg">Export Data</div>
@@ -431,7 +515,6 @@ function App() {
             </div>
           </div>
 
-          {/* App Information */}
           <div className="mt-8 pt-8 border-t-2 border-gray-300">
             <div className="text-center text-sm text-gray-700 space-y-1">
               <div className="font-bold">Strength Tracker MVP3</div>
@@ -557,7 +640,15 @@ function App() {
         <div className="p-4">
           <div className="grid grid-cols-1 gap-4 mb-8">
             {exercises.map(exercise => {
-              const currentSets = currentWorkout[exercise] || 0;
+              const exerciseData = currentWorkout[exercise];
+              let currentSets = 0;
+              
+              if (Array.isArray(exerciseData)) {
+                currentSets = exerciseData.length;
+              } else {
+                currentSets = exerciseData || 0;
+              }
+              
               const isWorked = currentSets > 0;
               return (
                 <div 
@@ -571,7 +662,14 @@ function App() {
                       <div className="font-bold text-lg">
                         {exercise.includes('General') ? 'General' : exercise}
                       </div>
-                      <div className="text-xl font-bold">{currentSets} sets</div>
+                      <div className="text-xl font-bold">
+                        {currentSets} sets
+                        {appData.settings.repsTracking && Array.isArray(exerciseData) && exerciseData.length > 0 && (
+                          <div className="text-sm font-normal">
+                            Last: {exerciseData[exerciseData.length - 1].reps} reps
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="flex flex-col gap-2">
                       <button
@@ -621,6 +719,75 @@ function App() {
             )}
           </div>
         </div>
+
+        {/* Reps Entry Modal Overlay */}
+        {repsEntry && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4"
+            style={{ zIndex: 9999 }}
+          >
+            <div 
+              className="bg-white border-4 border-black p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="font-bold text-xl mb-6 text-center">
+                {repsEntry.exercise.includes('General') ? 'General' : repsEntry.exercise}
+              </h3>
+              
+              <div className="text-center">
+                <div className="text-lg mb-6 font-bold">How many reps?</div>
+
+                {/* Large Number Display */}
+                <div className="mb-8">
+                  <div className="inline-block border-4 border-black p-8 bg-white">
+                    <span className="text-8xl font-bold">{repsEntry.currentReps}</span>
+                  </div>
+                </div>
+
+                {/* Large +/- Controls */}
+                <div className="flex justify-center gap-8 mb-8">
+                  <button
+                    onClick={() => setRepsEntry(prev => ({
+                      ...prev,
+                      currentReps: Math.max(1, prev.currentReps - 1)
+                    }))}
+                    className="w-24 h-24 bg-white text-black text-4xl font-bold border-4 border-black hover:bg-gray-100 transition-colors"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    −
+                  </button>
+                  
+                  <button
+                    onClick={() => setRepsEntry(prev => ({
+                      ...prev,
+                      currentReps: Math.min(50, prev.currentReps + 1)
+                    }))}
+                    className="w-24 h-24 bg-black text-white text-4xl font-bold border-4 border-black hover:bg-white hover:text-black transition-colors"
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-4">
+                  <button
+                    onClick={() => saveSetWithReps(repsEntry.currentReps)}
+                    className="w-full bg-black text-white py-4 text-xl font-bold border-4 border-black hover:bg-white hover:text-black transition-colors min-h-[60px]"
+                  >
+                    SAVE SET
+                  </button>
+                  <button
+                    onClick={() => setRepsEntry(null)}
+                    className="w-full bg-white text-black py-4 text-lg font-bold border-4 border-black hover:bg-gray-100 transition-colors min-h-[60px]"
+                  >
+                    CANCEL
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
