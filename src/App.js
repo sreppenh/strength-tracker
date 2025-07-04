@@ -349,7 +349,12 @@ function App() {
   };
 
   const hasActiveSets = () => {
-    return Object.values(currentWorkout).some(sets => sets > 0);
+    return Object.values(currentWorkout).some(sets => {
+      if (Array.isArray(sets)) {
+        return sets.length > 0;
+      }
+      return sets > 0;
+    });
   };
 
   const exportToCSV = () => {
@@ -560,6 +565,14 @@ function App() {
             </div>
           ) : (
             <div>
+              {/* Start Workout Button - NOW AT TOP */}
+              <button
+                onClick={() => setView('workout')}
+                className="w-full bg-black text-white py-4 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px] mb-6"
+              >
+                START TODAY'S WORKOUT
+              </button>
+
               <h2 className="text-xl font-bold mb-6">LAST 7 DAYS</h2>
               
               <div className="border-2 border-black p-4 mb-6">
@@ -574,7 +587,7 @@ function App() {
                 </div>
               </div>
               
-              <div className="space-y-3 mb-8">
+              <div className="space-y-3">
                 {recentWorkouts.map((workout, index) => (
                   <div key={index} className="border-2 border-black p-4">
                     <div className="font-bold text-lg mb-1">
@@ -606,13 +619,6 @@ function App() {
                   </div>
                 ))}
               </div>
-
-              <button
-                onClick={() => setView('workout')}
-                className="w-full bg-black text-white py-4 text-lg font-bold border-2 border-black hover:bg-white hover:text-black transition-colors min-h-[44px]"
-              >
-                START TODAY'S WORKOUT
-              </button>
             </div>
           )}
         </div>
