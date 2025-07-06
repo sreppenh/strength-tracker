@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Settings } from 'lucide-react';
 import { exerciseLibrary } from '../data/exercises';
 
@@ -8,108 +8,148 @@ const HomeView = ({
   muscleGroups, 
   capitalizeFirst, 
   selectedHistoryWorkout, 
-  setSelectedHistoryWorkout 
+  setSelectedHistoryWorkout, 
+  deleteWorkout
 }) => {
-  const formatDate = (date) => {
-    const today = new Date();
-    const workoutDate = new Date(date + 'T12:00:00');
-    
-    const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-    const workoutDateOnly = new Date(workoutDate.getFullYear(), workoutDate.getMonth(), workoutDate.getDate());
-    
-    const diffTime = todayDateOnly - workoutDateOnly;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const dayName = dayNames[workoutDate.getDay()];
-    const dateStr = workoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    
-    if (diffDays === 0) return `Today, ${dateStr}`;
-    if (diffDays === 1) return `Yesterday, ${dateStr}`; 
-    return `${dayName}, ${dateStr}`;
-  };
 
-  const getRecentWorkouts = () => {
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    
-    return appData.workouts
-      .filter(workout => new Date(workout.date) >= sevenDaysAgo)
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 7);
-  };
+const [deleteConfirmation, setDeleteConfirmation] = useState(null);
 
-  const getWeeklyTotals = () => {
-    const recentWorkouts = getRecentWorkouts();
-    const totals = {
-      chest: 0, back: 0, shoulders: 0, 
-      biceps: 0, triceps: 0, legs: 0, core: 0
-    };
-    
-    recentWorkouts.forEach(workout => {
-      if (workout.exercises) {
-        Object.entries(workout.exercises).forEach(([exercise, sets]) => {
-          const muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
-            exerciseLibrary[muscleGroup].includes(exercise)
-          );
-          if (muscle) {
-            const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
-            totals[muscle] += setCount;
-          }
-        });
-      }
-    });
-    
-    return totals;
-  };
+const formatDate = (date, startTime) => {
+  const today = new Date();
+  const workoutDate = new Date(startTime || date + 'T12:00:00');
+  
+  const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const workoutDateOnly = new Date(workoutDate.getFullYear(), workoutDate.getMonth(), workoutDate.getDate());
+  
+  const diffTime = todayDateOnly - workoutDateOnly;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = dayNames[workoutDate.getDay()];
+  const dateStr = workoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  
+  // Add time formatting
+  const timeStr = startTime ? workoutDate.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  }) : '';
+  
+  if (diffDays === 0) return startTime ? `Today, ${dateStr}, ${timeStr}` : `Today, ${dateStr}`;
+  if (diffDays === 1) return startTime ? `Yesterday, ${dateStr}, ${timeStr}` : `Yesterday, ${dateStr}`;
+  return startTime ? `${dayName}, ${dateStr} - ${timeStr}` : `${dayName}, ${dateStr}`;
+};
 
-  const getWorkoutSummary = (workoutData) => {
-    if (!workoutData.exercises) return 'No sets logged';
-    
-    const muscleGroupTotals = {
-      chest: 0, back: 0, shoulders: 0, 
-      biceps: 0, triceps: 0, legs: 0, core: 0
-    };
-    
-    Object.entries(workoutData.exercises).forEach(([exercise, sets]) => {
-      const muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
-        exerciseLibrary[muscleGroup].includes(exercise)
-      );
-      if (muscle) {
-        const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
-        muscleGroupTotals[muscle] += setCount;
-      }
-    });
-    
-    const activeMuscles = Object.entries(muscleGroupTotals)
-      .filter(([_, sets]) => sets > 0)
-      .map(([muscle, sets]) => `${muscle.charAt(0).toUpperCase() + muscle.slice(1)} (${sets})`);
-    
-    return activeMuscles.length > 0 ? activeMuscles.slice(0, 3).join(', ') : 'No sets logged';
-  };
+const getRecentWorkouts = () => {
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  
+  return appData.workouts
+    .filter(workout => new Date(workout.startTime || workout.date) >= sevenDaysAgo)
+    .sort((a, b) => {
+      // Use startTime if available, fallback to date
+      const timeA = new Date(a.startTime || a.date + 'T12:00:00');
+      const timeB = new Date(b.startTime || b.date + 'T12:00:00');
+      return timeB - timeA; // Most recent first (descending order)
+    })
+    .slice(0, 7);
+};
 
-  const getExerciseBreakdown = (workoutData, muscleGroup) => {
-    if (!workoutData.exercises) return [];
-    
-    const exercises = exerciseLibrary[muscleGroup];
-    return exercises
-      .map(exercise => {
-        const exerciseData = workoutData.exercises[exercise];
-        let sets = 0;
+const getWeeklyTotals = () => {
+  const recentWorkouts = getRecentWorkouts();
+  const totals = {
+    chest: 0, back: 0, shoulders: 0, 
+    biceps: 0, triceps: 0, legs: 0, core: 0
+  };
+  
+  recentWorkouts.forEach(workout => {
+    if (workout.exercises) {
+      Object.entries(workout.exercises).forEach(([exercise, sets]) => {
+        // First check default exercises
+        let muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
+          exerciseLibrary[muscleGroup].includes(exercise)
+        );
         
-        if (typeof exerciseData === 'number') {
-          sets = exerciseData;
-        } else if (Array.isArray(exerciseData)) {
-          sets = exerciseData.length;
+        // If not found in defaults, check custom exercises
+        if (!muscle) {
+          muscle = Object.keys(appData.settings.customExercises || {}).find(muscleGroup => {
+            const customExercises = appData.settings.customExercises[muscleGroup] || [];
+            return customExercises.includes(exercise);
+          });
         }
         
-        return {
-          name: exercise,
-          sets: sets
-        };
-      })
-      .filter(exercise => exercise.sets > 0);
+        if (muscle) {
+          const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
+          totals[muscle] += setCount;
+        }
+      });
+    }
+  });
+  
+  return totals;
+};
+
+const getWorkoutSummary = (workoutData) => {
+  if (!workoutData.exercises) return 'No sets logged';
+  
+  const muscleGroupTotals = {
+    chest: 0, back: 0, shoulders: 0, 
+    biceps: 0, triceps: 0, legs: 0, core: 0
   };
+  
+  Object.entries(workoutData.exercises).forEach(([exercise, sets]) => {
+    // First check default exercises
+    let muscle = Object.keys(exerciseLibrary).find(muscleGroup =>
+      exerciseLibrary[muscleGroup].includes(exercise)
+    );
+    
+    // If not found in defaults, check custom exercises
+    if (!muscle) {
+      muscle = Object.keys(appData.settings.customExercises || {}).find(muscleGroup => {
+        const customExercises = appData.settings.customExercises[muscleGroup] || [];
+        return customExercises.includes(exercise);
+      });
+    }
+    
+    if (muscle) {
+      const setCount = typeof sets === 'number' ? sets : (Array.isArray(sets) ? sets.length : 0);
+      muscleGroupTotals[muscle] += setCount;
+    }
+  });
+  
+  const activeMuscles = Object.entries(muscleGroupTotals)
+    .filter(([_, sets]) => sets > 0)
+    .map(([muscle, sets]) => `${muscle.charAt(0).toUpperCase() + muscle.slice(1)} (${sets})`);
+  
+  return activeMuscles.length > 0 ? activeMuscles.slice(0, 3).join(', ') : 'No sets logged';
+};
+
+const getExerciseBreakdown = (workoutData, muscleGroup) => {
+  if (!workoutData.exercises) return [];
+  
+  // Get both default and custom exercises for this muscle group
+  const defaultExercises = exerciseLibrary[muscleGroup] || [];
+  const customExercises = appData.settings.customExercises[muscleGroup] || [];
+  const allExercises = [...defaultExercises, ...customExercises];
+  
+  return allExercises
+    .map(exercise => {
+      const exerciseData = workoutData.exercises[exercise];
+      let sets = 0;
+      
+      if (typeof exerciseData === 'number') {
+        sets = exerciseData;
+      } else if (Array.isArray(exerciseData)) {
+        sets = exerciseData.length;
+      }
+      
+      return {
+        name: exercise,
+        sets: sets
+      };
+    })
+    .filter(exercise => exercise.sets > 0);
+};
 
   const recentWorkouts = getRecentWorkouts();
 
@@ -166,8 +206,17 @@ const HomeView = ({
             <div className="workout-history">
               {recentWorkouts.map((workout, index) => (
                 <div key={index} className="workout-card">
-                  <div className="workout-date">
-                    {formatDate(workout.date)}
+                  <div className="workout-header">
+                    <div className="workout-date">
+                      {formatDate(workout.date, workout.startTime)}
+                    </div>
+                    <button
+                      onClick={() => setDeleteConfirmation({ workout, index })}
+                      className="delete-workout-button"
+                      title="Delete workout"
+                    >
+                      ×
+                    </button>
                   </div>
                   <div className="workout-summary">
                     {getWorkoutSummary(workout)}
@@ -222,6 +271,40 @@ const HomeView = ({
             >
               CLOSE
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirmation(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Delete Workout?</h3>
+            
+            <div className="modal-body">
+              <div className="abandon-warning">
+                Delete this workout from {formatDate(deleteConfirmation.workout.date, deleteConfirmation.workout.startTime)}?
+              </div>
+              <div className="abandon-subtext">This cannot be undone.</div>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={() => {
+                  deleteWorkout(deleteConfirmation.index);
+                  setDeleteConfirmation(null);
+                }}
+                className="abandon-confirm-button"
+              >
+                DELETE WORKOUT
+              </button>
+              <button
+                onClick={() => setDeleteConfirmation(null)}
+                className="abandon-cancel-button"
+              >
+                CANCEL
+              </button>
+            </div>
           </div>
         </div>
       )}

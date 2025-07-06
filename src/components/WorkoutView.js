@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Plus } from 'lucide-react';
 
 const WorkoutView = ({ 
@@ -10,39 +10,19 @@ const WorkoutView = ({
   finishWorkout, 
   goBackToHome, 
   hasActiveSets, 
+  abandonConfirmation, 
+  setAbandonConfirmation, 
   confirmAbandonWorkout,
   currentWorkout,
-  repsEntry
+  onStartWorkout
 }) => {
-  // Move abandon confirmation state to local component
-  const [localAbandonConfirmation, setLocalAbandonConfirmation] = useState(false);
   
-  console.log('🔄 WorkoutView RENDER - localAbandonConfirmation:', localAbandonConfirmation);
-  console.log('🟠 repsEntry state check:', repsEntry);
-  
-  const handleAbandonClick = () => {
-    console.log('🔴 ABANDON BUTTON CLICKED');
-    
-    // Check if there's progress locally
-    const hasProgress = Object.values(currentWorkout).some(sets => {
-      if (Array.isArray(sets)) {
-        return sets.length > 0;
-      }
-      return sets > 0;
-    });
-    
-    if (hasProgress) {
-      setLocalAbandonConfirmation(true);
-    } else {
-      // No progress, go home directly
-      setView('home');
+  // Capture start time when workout view loads with no existing workout data
+  useEffect(() => {
+    if (!currentWorkout.startTime && Object.keys(currentWorkout).length === 0) {
+      onStartWorkout();
     }
-  };
-  
-  const handleConfirmAbandon = () => {
-    confirmAbandonWorkout();
-    setLocalAbandonConfirmation(false);
-  };
+  }, [currentWorkout, onStartWorkout]);
   
   return (
     <div className="app-container">
@@ -82,7 +62,7 @@ const WorkoutView = ({
         </div>
 
         <div className="workout-actions">
-          {hasActiveSets && hasActiveSets() && (
+          {hasActiveSets() && (
             <button
               onClick={finishWorkout}
               className="finish-workout-button"
@@ -92,7 +72,7 @@ const WorkoutView = ({
           )}
 
           <button
-            onClick={handleAbandonClick}
+            onClick={goBackToHome}
             className="abandon-workout-button"
           >
             ABANDON WORKOUT
@@ -101,35 +81,9 @@ const WorkoutView = ({
       </div>
 
       {/* Abandon Workout Confirmation Modal */}
-      {localAbandonConfirmation && (
-        <div 
-          className="modal-overlay" 
-          onClick={() => setLocalAbandonConfirmation(false)}
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '16px',
-            zIndex: 9999
-          }}
-        >
-          <div 
-            className="modal-content" 
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white',
-              border: '4px solid black',
-              padding: '24px',
-              width: '100%',
-              maxWidth: '448px'
-            }}
-          >
+      {abandonConfirmation && (
+        <div className="modal-overlay" onClick={() => setAbandonConfirmation(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">
               Abandon Workout?
             </h3>
@@ -141,13 +95,13 @@ const WorkoutView = ({
 
             <div className="modal-actions">
               <button
-                onClick={handleConfirmAbandon}
+                onClick={confirmAbandonWorkout}
                 className="abandon-confirm-button"
               >
                 YES, ABANDON WORKOUT
               </button>
               <button
-                onClick={() => setLocalAbandonConfirmation(false)}
+                onClick={() => setAbandonConfirmation(false)}
                 className="abandon-cancel-button"
               >
                 CONTINUE WORKOUT

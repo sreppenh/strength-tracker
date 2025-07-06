@@ -27,9 +27,9 @@ function App() {
 
 
 // Auto-save whenever appData changes
-//useEffect(() => {
-    //saveData(appData);
-  //}, [appData, saveData]);
+useEffect(() => {
+    saveData(appData);
+  }, [appData, saveData]);
 
   const muscleGroups = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'core'];
 
@@ -380,8 +380,12 @@ const finishWorkout = () => {
   
   const newWorkout = {
     date: today,
+    startTime: currentWorkout.startTime || new Date().toISOString(), // Use captured time or current time as fallback
     exercises: JSON.parse(JSON.stringify(currentWorkout))
   };
+  
+  // Remove startTime from exercises object since it's not exercise data
+  delete newWorkout.exercises.startTime;
   
   setAppData(prev => ({
     ...prev,
@@ -453,6 +457,13 @@ const goBackToHome = () => {
     setResetConfirmation(null);
   };
 
+  const deleteWorkout = (workoutIndex) => {
+  setAppData(prev => ({
+    ...prev,
+    workouts: prev.workouts.filter((_, index) => index !== workoutIndex)
+  }));
+};
+
   const exportToCSV = () => {
     if (appData.workouts.length === 0) {
       alert('No workout data to export');
@@ -497,6 +508,14 @@ const goBackToHome = () => {
   // Component props
 console.log('🔍 hasActiveSets function check:', typeof hasActiveSets, hasActiveSets);
 
+// Add this function before commonProps
+const handleStartWorkout = () => {
+  setCurrentWorkout(prev => ({
+    ...prev,
+    startTime: new Date().toISOString()
+  }));
+};
+
   const commonProps = {
     appData,
     currentWorkout,
@@ -535,25 +554,27 @@ console.log('🔍 hasActiveSets function check:', typeof hasActiveSets, hasActiv
     setExerciseManagement,
     selectedHistoryWorkout,
     setSelectedHistoryWorkout,
-    setCurrentMuscleGroup, 
+    setCurrentMuscleGroup,
+    onStartWorkout: handleStartWorkout,
+    deleteWorkout  // Add this line
   
   };
 
   // Render appropriate view
-  switch (view) {
-    case 'home':
-      return <HomeView {...commonProps} />;
-    case 'settings':
-      return <SettingsView {...commonProps} />;
-    case 'exercise-management':
-      return <ExerciseManagement {...commonProps} />;
-    case 'exercises':
-      return <ExerciseView {...commonProps} currentMuscleGroup={currentMuscleGroup} />;
-    case 'workout':
-    default:
-      console.log('🔍 commonProps being passed:', Object.keys(commonProps));
-return <WorkoutView {...commonProps} />;
-  }
+switch (view) {
+  case 'home':
+    return <HomeView {...commonProps} />;
+  case 'settings':
+    return <SettingsView {...commonProps} />;
+  case 'exercise-management':
+    return <ExerciseManagement {...commonProps} />;
+  case 'exercises':
+    return <ExerciseView {...commonProps} currentMuscleGroup={currentMuscleGroup} />;
+  case 'workout':
+  default:
+    console.log('🔍 commonProps being passed:', Object.keys(commonProps));
+    return <WorkoutView {...commonProps} />;  // Add this line
+}
 }
 
 export default App;
