@@ -1,437 +1,1791 @@
-/* Reset and Base Styles */
+/* Base styles */
 * {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 body {
   font-family: 'Courier New', monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Utility Classes */
-.min-h-screen {
-  min-height: 100vh;
-}
-
-.bg-white {
   background-color: white;
+  color: black;
+  line-height: 1.4;
 }
 
-.bg-black {
-  background-color: black;
-}
-
-.bg-gray-100 {
-  background-color: #f3f4f6;
-}
-
-.text-black {
+/* App container */
+.app-container {
+  min-height: 100vh;
+  background-color: white;
   color: black;
 }
 
-.text-white {
-  color: white;
-}
-
-.text-gray-700 {
-  color: #374151;
-}
-
-.font-mono {
-  font-family: 'Courier New', monospace;
-}
-
-.font-bold {
-  font-weight: bold;
-}
-
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.text-lg {
-  font-size: 1.125rem;
-  line-height: 1.75rem;
-}
-
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
-/* Layout */
-.flex {
+/* Header */
+.app-header {
   display: flex;
-}
-
-.grid {
-  display: grid;
-}
-
-.items-center {
   align-items: center;
-}
-
-.justify-between {
   justify-content: space-between;
+  padding: 16px;
+  border-bottom: 2px solid black;
 }
 
-.justify-center {
-  justify-content: center;
-}
-
-.text-center {
+.app-title {
+  font-size: 20px;
+  font-weight: bold;
   text-align: center;
 }
 
-.text-left {
-  text-align: left;
+.spacer {
+  width: 24px;
 }
 
-/* Spacing */
-.p-2 {
-  padding: 0.5rem;
+/* Content */
+.app-content {
+  padding: 16px;
 }
 
-.p-4 {
-  padding: 1rem;
-}
-
-.py-4 {
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-.py-12 {
-  padding-top: 3rem;
-  padding-bottom: 3rem;
-}
-
-.px-8 {
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-.mb-1 {
-  margin-bottom: 0.25rem;
-}
-
-.mb-3 {
-  margin-bottom: 0.75rem;
-}
-
-.mb-4 {
-  margin-bottom: 1rem;
-}
-
-.mb-6 {
-  margin-bottom: 1.5rem;
-}
-
-.mb-8 {
-  margin-bottom: 2rem;
-}
-
-.pt-8 {
-  padding-top: 2rem;
-}
-
-.mt-8 {
-  margin-top: 2rem;
-}
-
-/* Grid */
-.grid-cols-1 {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
-}
-
-.space-y-4 > * + * {
-  margin-top: 1rem;
-}
-
-/* Flexbox */
-.flex-col {
-  flex-direction: column;
-}
-
-/* Sizing */
-.w-6 {
-  width: 1.5rem;
-}
-
-.w-12 {
-  width: 3rem;
-}
-
-.h-8 {
-  height: 2rem;
-}
-
-.h-12 {
-  height: 3rem;
-}
-
-.w-full {
-  width: 100%;
-}
-
-.min-h-\[44px\] {
-  min-height: 44px;
-}
-
-.min-w-\[44px\] {
-  min-width: 44px;
-}
-
-/* Borders */
-.border {
-  border-width: 1px;
-  border-style: solid;
-}
-
-.border-2 {
-  border-width: 2px;
-  border-style: solid;
-}
-
-.border-black {
-  border-color: black;
-}
-
-.border-gray-300 {
-  border-color: #d1d5db;
-}
-
-.border-b-2 {
-  border-bottom-width: 2px;
-  border-bottom-style: solid;
-}
-
-/* Transitions */
-.transition-colors {
-  transition-property: color, background-color, border-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Interactive States */
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
-}
-
-button:hover {
-  transition: all 0.15s ease;
-}
-
-.hover\:bg-gray-100:hover {
-  background-color: #f3f4f6;
-}
-
-.hover\:bg-white:hover {
-  background-color: white;
-}
-
-.hover\:text-black:hover {
+/* Buttons */
+.icon-button, .back-button {
+  padding: 8px;
+  border: 2px solid black;
+  background: white;
   color: black;
-}
-
-/* Responsive Design */
-@media (min-width: 768px) {
-  .md\:grid-cols-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* CRITICAL: Icon Button Centering Fix */
-button.w-12.h-12,
-button.w-12.h-8,
-button.w-20.h-20 {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Reps Modal Button Styling */
-.reps-modal-button {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-weight: bold !important;
-  user-select: none !important;
-  -webkit-user-select: none !important;
-  -moz-user-select: none !important;
-  -ms-user-select: none !important;
-}
-
-/* Modal Overlay Improvements */
-.fixed.inset-0 {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 9999 !important;
-}
-
-/* Modal Content Styling */
-.bg-opacity-75 {
-  background-color: rgba(0, 0, 0, 0.75) !important;
-}
-
-/* Large Button Sizes for Modal */
-.w-24 {
-  width: 6rem !important;
-}
-
-.h-24 {
-  height: 6rem !important;
-}
-
-.text-8xl {
-  font-size: 6rem !important;
-  line-height: 1 !important;
-}
-
-.text-4xl {
-  font-size: 2.25rem !important;
-  line-height: 2.5rem !important;
-}
-
-.min-h-\[60px\] {
-  min-height: 60px !important;
-}
-
-.max-w-md {
-  max-width: 28rem !important;
-}
-
-.gap-8 {
-  gap: 2rem !important;
-}
-
-.p-6 {
-  padding: 1.5rem !important;
-}
-
-.p-8 {
-  padding: 2rem !important;
-}
-
-/* Ensure all flex buttons center their content */
-.flex.items-center.justify-center {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-/* Custom Component Styles */
-.strength-card {
+  font-weight: bold;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  min-width: 44px;
-  border: 2px solid black;
-  font-weight: bold;
+  transition: background-color 0.2s;
 }
 
-.strength-card:hover {
-  transition: all 0.15s ease;
-}
-
-/* Input Styling */
-input[type="text"] {
-  font-family: 'Courier New', monospace;
-  outline: none;
-}
-
-input[type="text"]:focus {
-  background-color: #f9f9f9;
-}
-
-/* Additional utility classes */
-.flex-1 {
-  flex: 1;
-}
-
-.bg-gray-50 {
-  background-color: #f9fafb;
-}
-
-.bg-gray-100 {
+.icon-button:hover, .back-button:hover {
   background-color: #f3f4f6;
 }
 
-.text-gray-500 {
+.primary-button {
+  background: black;
+  color: white;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.primary-button:hover {
+  background: white;
+  color: black;
+}
+
+/* Welcome screen */
+.welcome-screen {
+  text-align: center;
+  padding: 48px 0;
+}
+
+.welcome-title {
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.welcome-text {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #374151;
+}
+
+.welcome-tip {
+  font-size: 14px;
+  margin-bottom: 32px;
   color: #6b7280;
 }
 
-.text-gray-600 {
-  color: #4b5563;
+/* Home screen */
+.start-workout-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  margin-bottom: 24px;
+  transition: all 0.2s;
 }
 
-.border-gray-300 {
+.start-workout-button:hover {
+  background: white;
+  color: black;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.totals-card {
+  border: 2px solid black;
+  padding: 16px;
+  margin-bottom: 24px;
+}
+
+.card-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+/* Update the totals-grid class */
+.totals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two equal columns */
+  gap: 4px;
+  font-size: 14px;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  padding: 2px 0; /* Add slight padding for readability */
+}
+
+.total-row span:first-child {
+  white-space: nowrap;
+}
+
+.total-row span:last-child {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.workout-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.workout-card {
+  border: 2px solid black;
+  padding: 16px;
+}
+
+.workout-date {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.workout-summary {
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.muscle-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.muscle-button {
+  text-align: left;
+  padding: 8px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.muscle-button:hover {
+  background-color: #f3f4f6;
+}
+
+.muscle-name {
+  font-weight: bold;
+}
+
+/* Workout view */
+.muscle-group-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .muscle-group-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.muscle-group-card {
+  border: 2px solid black;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.muscle-group-card.worked {
+  background: black;
+  color: white;
+}
+
+.muscle-group-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.muscle-group-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.muscle-group-sets {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.muscle-group-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.muscle-add-button {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.2s;
+}
+
+.muscle-add-button:not(.worked) {
+  background: black;
+  color: white;
+}
+
+.muscle-add-button:not(.worked):hover {
+  background: white;
+  color: black;
+}
+
+.muscle-add-button.worked {
+  background: white;
+  color: black;
+}
+
+.muscle-add-button.worked:hover {
+  background: #f3f4f6;
+}
+
+.workout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.finish-workout-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.finish-workout-button:hover {
+  background: white;
+  color: black;
+}
+
+.abandon-workout-button {
+  width: 100%;
+  background: #d1d5db;
+  color: black;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.abandon-workout-button:hover {
+  background: #9ca3af;
+}
+
+/* Exercise view */
+.exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.exercise-card {
+  border: 2px solid black;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.exercise-card.worked {
+  background: black;
+  color: white;
+}
+
+.exercise-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.exercise-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.exercise-sets-info {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.last-reps {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+/* Update the exercise-actions class */
+.exercise-actions {
+  display: flex;
+  flex-direction: row; /* Changed from column to row */
+  gap: 8px;
+  align-items: center; /* Add this for better alignment */
+}
+
+.exercise-add-button {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  transition: all 0.2s;
+}
+
+.exercise-add-button:not(.worked) {
+  background: black;
+  color: white;
+}
+
+.exercise-add-button:not(.worked):hover {
+  background: white;
+  color: black;
+}
+
+.exercise-add-button.worked {
+  background: white;
+  color: black;
+}
+
+.exercise-add-button.worked:hover {
+  background: #f3f4f6;
+}
+
+.exercise-remove-button {
+  width: 48px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid black;
+  background: white;
+  color: black;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+}
+
+.exercise-remove-button:hover {
+  background: #f3f4f6;
+}
+
+.exercise-screen-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.back-to-groups-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.back-to-groups-button:hover {
+  background: #f3f4f6;
+}
+
+/* Settings */
+.settings-section {
+  margin-bottom: 32px;
+}
+
+.settings-section-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #374151;
+}
+
+.settings-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-card {
+  border: 2px solid black;
+  padding: 16px;
+}
+
+.settings-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-card-header {
+  margin-bottom: 12px;
+}
+
+.settings-info {
+  flex: 1;
+}
+
+.settings-title {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.settings-description {
+  font-size: 14px;
+  color: #374151;
+  margin-top: 4px;
+}
+
+/* More robust toggle switch implementation */
+/* Better toggle switch implementation */
+.toggle-switch {
+  position: relative !important;
+  width: 60px !important;
+  height: 30px !important;
+  background: #d1d5db !important; /* Gray background when off */
+  border: 2px solid black !important;
+  cursor: pointer !important;
+  display: inline-block !important;
+  transition: background-color 0.3s ease !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.toggle-switch.active {
+  background: #4ade80 !important; /* Green background when on */
+}
+
+.toggle-slider {
+  position: absolute !important;
+  width: 26px !important;
+  height: 26px !important;
+  background: white !important;
+  border: 2px solid black !important;
+  top: 0px !important;
+  left: 0px !important;
+  transition: transform 0.3s ease !important;
+  border-radius: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.toggle-switch.active .toggle-slider {
+  transform: translateX(30px) !important;
+}
+
+/* Alternative cleaner approach if the above doesn't work */
+.toggle-switch-alt {
+  width: 60px;
+  height: 30px;
+  border: 2px solid black;
+  background: #d1d5db;
+  position: relative;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-switch-alt.active {
+  background: #4ade80;
+}
+
+.toggle-switch-alt::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: 2px solid black;
+  position: absolute;
+  left: 1px;
+  transition: left 0.3s ease;
+}
+
+.toggle-switch-alt.active::after {
+  left: 31px;
+}
+
+/* Increment buttons */
+.increment-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.increment-button {
+  flex: 1;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.increment-button:not(.active) {
+  background: white;
+  color: black;
+}
+
+.increment-button:not(.active):hover {
+  background: #f3f4f6;
+}
+
+.increment-button.active {
+  background: black;
+  color: white;
+}
+
+/* Settings action buttons */
+.settings-action-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.settings-action-button:hover {
+  background: #f3f4f6;
+}
+
+.export-button {
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.export-button:hover {
+  background: white;
+  color: black;
+}
+
+.reset-button {
+  background: black;
+  color: white;
+}
+
+.reset-button:hover {
+  background: white;
+  color: black;
+}
+
+.settings-footer {
+  padding-top: 32px;
+  border-top: 2px solid #d1d5db;
+}
+
+.app-info {
+  text-align: center;
+  font-size: 14px;
+  color: #374151;
+}
+
+.app-info > div {
+  margin-bottom: 4px;
+}
+
+.app-name {
+  font-weight: bold;
+}
+
+/* Exercise Management */
+.exercise-management-intro {
+  margin-bottom: 24px;
+}
+
+.section-description {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+.muscle-group-selection {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.muscle-group-selection-button {
+  border: 2px solid black;
+  padding: 16px;
+  background: white;
+  color: black;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.muscle-group-selection-button:hover {
+  background: #f3f4f6;
+}
+
+.muscle-group-selection-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.muscle-group-selection-stats {
+  font-size: 14px;
+  color: #374151;
+}
+
+.exercise-management-section {
+  margin-bottom: 32px;
+}
+
+.add-exercise-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.add-exercise-button:hover {
+  background: white;
+  color: black;
+}
+
+.add-exercise-form {
+  border: 2px solid black;
+  padding: 16px;
+}
+
+.add-exercise-input-container {
+  margin-bottom: 16px;
+}
+
+.add-exercise-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid black;
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+}
+
+.add-exercise-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.add-exercise-save-button {
+  flex: 1;
+  background: black;
+  color: white;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.add-exercise-save-button:hover {
+  background: white;
+  color: black;
+}
+
+.add-exercise-cancel-button {
+  flex: 1;
+  background: white;
+  color: black;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.add-exercise-cancel-button:hover {
+  background: #f3f4f6;
+}
+
+.exercise-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.exercise-order-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 2px solid black;
+}
+
+.exercise-order-item.default {
   border-color: #d1d5db;
+  background: #f9fafb;
 }
 
-.border-gray-400 {
+.exercise-order-item.custom {
+  border-color: black;
+  background: white;
+}
+
+.exercise-order-info {
+  flex: 1;
+}
+
+.exercise-order-name {
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.exercise-order-meta {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.exercise-order-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exercise-order-button {
+  width: 48px;
+  height: 48px;
+  border: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.exercise-order-button.enabled {
+  background: white;
+  color: black;
+  border-color: black;
+}
+
+.exercise-order-button.enabled:hover {
+  background: #f3f4f6;
+}
+
+.exercise-order-button.enabled:active {
+  background: #e5e7eb;
+}
+
+.exercise-order-button.disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
   border-color: #9ca3af;
+  cursor: not-allowed;
 }
 
-.gap-2 {
-  gap: 0.5rem;
+.exercise-remove-button {
+  width: 48px;
+  height: 48px;
+  background: white;
+  color: black;
+  border: 2px solid black;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  transition: all 0.2s;
 }
 
-.ml-4 {
-  margin-left: 1rem;
+.exercise-remove-button:hover {
+  background: #f3f4f6;
 }
 
-.space-y-3 > * + * {
-  margin-top: 0.75rem;
+.hidden-exercise-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Mobile Optimization */
-@media (max-width: 767px) {
-  .p-4 {
-    padding: 0.75rem;
+.hidden-exercise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border: 2px solid #9ca3af;
+  background: #f3f4f6;
+}
+
+.hidden-exercise-info {
+  flex: 1;
+}
+
+.hidden-exercise-name {
+  font-weight: bold;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+.hidden-exercise-meta {
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.restore-exercise-button {
+  width: 48px;
+  height: 48px;
+  background: black;
+  color: white;
+  border: 2px solid black;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 16px;
+  transition: all 0.2s;
+}
+
+.restore-exercise-button:hover {
+  background: white;
+  color: black;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.modal-content {
+  background: white;
+  border: 4px solid black;
+  padding: 24px;
+  width: 100%;
+  max-width: 448px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-weight: bold;
+  font-size: 20px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.modal-body {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Remove Exercise modal */
+.delete-confirmation-content {
+  margin-bottom: 24px;
+}
+
+.delete-exercise-info {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.delete-exercise-name {
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.delete-exercise-type {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.delete-warning {
+  border: 2px solid #d1d5db;
+  padding: 16px;
+  background: #f9fafb;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.delete-warning-content {
+  font-size: 14px;
+}
+
+.delete-warning-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.delete-warning-text {
+  line-height: 1.5;
+}
+
+.delete-confirm-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.delete-confirm-button:hover {
+  background: white;
+  color: black;
+}
+
+.delete-cancel-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.delete-cancel-button:hover {
+  background: #f3f4f6;
+}
+
+/* Reps/Weight modal styling */
+.reps-modal {
+  max-width: 400px;
+}
+
+.reps-entry-content {
+  text-align: center;
+}
+
+.reps-entry-title {
+  font-size: 18px;
+  margin-bottom: 24px;
+  font-weight: bold;
+}
+
+.reps-section, .weight-section {
+  margin-bottom: 24px;
+}
+
+.reps-label, .weight-label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.reps-display, .weight-display {
+  display: inline-block;
+  border: 4px solid black;
+  padding: 16px 24px;
+  background: white;
+  margin-bottom: 16px;
+  min-width: 80px;
+}
+
+.reps-number, .weight-number {
+  font-size: 36px;
+  font-weight: bold;
+}
+
+.reps-controls, .weight-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.reps-control-button, .weight-control-button {
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.reps-control-button.minus, .weight-control-button.minus {
+  background: white;
+  color: black;
+}
+
+.reps-control-button.minus:hover, .weight-control-button.minus:hover {
+  background: #f3f4f6;
+}
+
+.reps-control-button.plus, .weight-control-button.plus {
+  background: black;
+  color: white;
+}
+
+.reps-control-button.plus:hover, .weight-control-button.plus:hover {
+  background: white;
+  color: black;
+}
+
+.reps-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.save-set-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.save-set-button:hover {
+  background: white;
+  color: black;
+}
+
+.cancel-set-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.cancel-set-button:hover {
+  background: #f3f4f6;
+}
+
+/* Reset confirmation modal */
+.reset-modal {
+  max-width: 500px;
+}
+
+.reset-warning {
+  text-align: center;
+}
+
+.reset-warning-title {
+  font-size: 18px;
+  margin-bottom: 24px;
+  font-weight: bold;
+}
+
+.reset-warning-details {
+  border: 2px solid black;
+  padding: 16px;
+  background: #f9fafb;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.reset-warning-header {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.reset-warning-list {
+  margin-left: 16px;
+}
+
+.reset-warning-list > div {
+  margin-bottom: 4px;
+}
+
+.reset-warning-footer {
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.reset-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reset-continue-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.reset-continue-button:hover {
+  background: white;
+  color: black;
+}
+
+.reset-cancel-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.reset-cancel-button:hover {
+  background: #f3f4f6;
+}
+
+/* Abandon workout modal */
+.abandon-warning {
+  font-size: 18px;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.abandon-subtext {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+.abandon-confirm-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.abandon-confirm-button:hover {
+  background: white;
+  color: black;
+}
+
+.abandon-cancel-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.abandon-cancel-button:hover {
+  background: #f3f4f6;
+}
+
+/* History detail modal */
+.exercise-breakdown {
+  margin-bottom: 24px;
+}
+
+.exercise-detail {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.exercise-detail:last-child {
+  border-bottom: none;
+}
+
+.exercise-name {
+  font-weight: bold;
+}
+
+.exercise-sets {
+  color: #6b7280;
+}
+
+.modal-close-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.modal-close-button:hover {
+  background: white;
+  color: black;
+}
+
+/* Focus styles for accessibility */
+button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Ensure all buttons have proper minimum touch targets */
+button {
+  min-height: 44px;
+  min-width: 44px;
+  font-family: 'Courier New', monospace;
+}
+
+/* Typography consistency */
+h1, h2, h3 {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+}
+
+input, button {
+  font-family: 'Courier New', monospace;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .muscle-breakdown {
+    grid-template-columns: 1fr;
   }
   
-  .text-xl {
-    font-size: 1.125rem;
+  .muscle-group-selection {
+    grid-template-columns: 1fr;
   }
   
-  .text-2xl {
-    font-size: 1.375rem;
+  .muscle-group-grid {
+    grid-template-columns: 1fr;
   }
+  
+  .reps-controls, .weight-controls {
+    gap: 8px;
+  }
+  
+  .reps-control-button, .weight-control-button {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  
+  .reps-number, .weight-number {
+    font-size: 28px;
+  }
+  
+  .modal-content {
+    max-width: 350px;
+    padding: 16px;
+  }
+  
+.settings-card-content {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+
+  
+  .total-row {
+    font-size: 12px;
+  }
+  
+  .app-content {
+    padding: 12px;
+  }
+  
+  .app-header {
+    padding: 12px;
+  }
+}
+
+/* Big display styles for single-mode modals */
+.reps-big-display, .weight-big-display {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.reps-big-number, .weight-big-number {
+  font-size: 48px; /* Larger than the dual-mode 36px */
+  font-weight: bold;
+  border: 4px solid black;
+  padding: 24px 32px;
+  background: white;
+  min-width: 120px;
+  text-align: center;
+}
+
+.reps-big-controls, .weight-big-controls {
+  display: flex;
+  justify-content: center;
+  gap: 24px; /* Larger gap for big mode */
+  margin-bottom: 24px;
+}
+
+.reps-big-control-button, .weight-big-control-button {
+  width: 60px;  /* Larger than regular 48px */
+  height: 60px;
+  font-size: 28px; /* Larger font */
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.reps-big-control-button.minus, .weight-big-control-button.minus {
+  background: white;
+  color: black;
+}
+
+.reps-big-control-button.minus:hover, .weight-big-control-button.minus:hover {
+  background: #f3f4f6;
+}
+
+.reps-big-control-button.plus, .weight-big-control-button.plus {
+  background: black;
+  color: white;
+}
+
+.reps-big-control-button.plus:hover, .weight-big-control-button.plus:hover {
+  background: white;
+  color: black;
+}
+
+/* Title styles for big modals */
+.reps-entry-title, .weight-entry-title {
+  font-size: 20px;
+  margin-bottom: 32px;
+  font-weight: bold;
+  text-align: center;
+}
+/* Clean checkbox styling */
+.settings-checkbox {
+  width: 24px !important;
+  height: 24px !important;
+  border: 3px solid black !important;
+  background: white !important;
+  cursor: pointer !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  position: relative !important;
+  margin: 0 !important;
+  min-width: 24px !important;
+  min-height: 24px !important;
+}
+
+.settings-checkbox:checked {
+  background: black !important;
+}
+
+.settings-checkbox:checked::after {
+  content: '✓' !important;
+  color: white !important;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.settings-checkbox:hover {
+  border-color: #374151 !important;
+}
+
+.settings-checkbox:focus {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
+}
+
+/* Fix completion stats formatting */
+.completion-stats {
+  display: flex;
+  justify-content: center;
+  gap: 48px; /* Increased gap between the two stats */
+  margin-bottom: 24px;
+}
+
+.completion-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: bold; /* Make numbers bold */
+  color: black;
+  margin-bottom: 4px; /* Add space between number and label */
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: normal; /* Ensure labels aren't bold */
+}
+
+.completion-message {
+  text-align: center;
+  font-size: 16px;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+/* Enhanced exercise order controls */
+.exercise-order-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.exercise-order-button {
+  width: 48px;
+  height: 48px;
+  border: 2px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  color: black;
+}
+
+/* Hide disabled buttons completely */
+.exercise-order-button.disabled {
+  display: none;
+}
+
+/* Enabled button states */
+.exercise-order-button.enabled:hover {
+  background: #f3f4f6;
+  transform: translateY(-1px); /* Subtle lift on hover */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.exercise-order-button.enabled:active {
+  background: #e5e7eb;
+  transform: translateY(0px); /* Return to normal on click */
+  box-shadow: none;
+}
+
+/* Add a subtle pulse animation when clicked */
+@keyframes button-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.exercise-order-button.enabled:active {
+  animation: button-pulse 0.2s ease;
+}
+
+/* Visual feedback for the item being moved */
+.exercise-order-item {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.exercise-order-item:hover {
+  background: #fafafa;
+}
+
+/* Add a subtle highlight animation when an item moves */
+@keyframes item-highlight {
+  0% { background: #f3f4f6; }
+  100% { background: transparent; }
+}
+
+.exercise-order-item.moved {
+  animation: item-highlight 0.5s ease;
+}
+
+.abandon-workout-button {
+  position: relative !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+/* Final confirmation modal styles */
+.final-warning {
+  text-align: center;
+}
+
+.final-warning-title {
+  font-size: 18px;
+  margin-bottom: 24px;
+  font-weight: bold;
+}
+
+.final-warning-icon {
+  margin-bottom: 24px;
+}
+
+.warning-emoji {
+  font-size: 48px;
+  margin-bottom: 8px;
+}
+
+.warning-text {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.warning-subtext {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.final-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.final-reset-button {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.final-reset-button:hover {
+  background: white;
+  color: black;
+}
+
+.final-cancel-button {
+  width: 100%;
+  background: white;
+  color: black;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  border: 2px solid black;
+  cursor: pointer;
+  min-height: 44px;
+  transition: all 0.2s;
+}
+
+.final-cancel-button:hover {
+  background: #f3f4f6;
+}
+
+/* Enhanced plus/minus button feedback */
+.exercise-add-button:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.exercise-remove-button:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Add subtle hover effects if not already present */
+.exercise-add-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.exercise-remove-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Quick flash effect on click */
+@keyframes button-flash {
+  0% { background: white; }
+  50% { background: #e5e7eb; }
+  100% { background: white; }
+}
+
+.exercise-add-button:not(.worked):active {
+  animation: button-flash 0.2s ease;
+}
+
+.exercise-remove-button:active {
+  animation: button-flash 0.2s ease;
+}
+
+/* Enhanced feedback for "worked" state buttons (white on black) */
+.exercise-add-button.worked:hover {
+  background: #e5e7eb !important;
+  color: black !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(255,255,255,0.2);
+}
+
+.exercise-add-button.worked:active {
+  background: #d1d5db !important;
+  color: black !important;
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+/* Flash effect for worked state buttons */
+@keyframes button-flash-worked {
+  0% { background: white; color: black; }
+  50% { background: #f3f4f6; color: black; }
+  100% { background: white; color: black; }
+}
+
+.exercise-add-button.worked:active {
+  animation: button-flash-worked 0.2s ease;
+}
+
+/* Make sure the minus button works in worked state too */
+.exercise-remove-button:hover {
+  background: #e5e7eb !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.exercise-remove-button:active {
+  background: #d1d5db !important;
+  transform: scale(0.95);
 }
