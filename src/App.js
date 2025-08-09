@@ -26,10 +26,53 @@ function App() {
   });
 
 
-// Auto-save whenever appData changes
-useEffect(() => {
+  // Auto-save whenever appData changes
+  useEffect(() => {
     saveData(appData);
   }, [appData, saveData]);
+
+  // Load current workout from localStorage on component mount
+  useEffect(() => {
+    const loadCurrentWorkout = () => {
+      try {
+        const savedCurrentWorkout = localStorage.getItem('currentWorkout');
+        if (savedCurrentWorkout) {
+          const parsedWorkout = JSON.parse(savedCurrentWorkout);
+          // Only restore if it has actual workout data (not just startTime)
+          const hasWorkoutData = Object.keys(parsedWorkout).some(key =>
+            key !== 'startTime' && parsedWorkout[key]
+          );
+          if (hasWorkoutData) {
+            setCurrentWorkout(parsedWorkout);
+            console.log('📱 Restored current workout from localStorage:', parsedWorkout);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading current workout from localStorage:', error);
+      }
+    };
+
+    loadCurrentWorkout();
+  }, []);
+
+  // Save current workout to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (Object.keys(currentWorkout).length > 0) {
+        localStorage.setItem('currentWorkout', JSON.stringify(currentWorkout));
+        console.log('💾 Saved current workout to localStorage');
+      } else {
+        // Clear current workout from localStorage when it's empty
+        localStorage.removeItem('currentWorkout');
+        console.log('🗑️ Cleared current workout from localStorage');
+      }
+    } catch (error) {
+      console.error('Error saving current workout to localStorage:', error);
+    }
+  }, [currentWorkout]);
+
+
+
 
   const muscleGroups = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'core'];
 
@@ -37,7 +80,7 @@ useEffect(() => {
   const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   const exerciseHasHistory = (exerciseName) => {
-    return appData.workouts.some(workout => 
+    return appData.workouts.some(workout =>
       workout.exercises && workout.exercises[exerciseName]
     );
   };
@@ -60,13 +103,13 @@ useEffect(() => {
     const customExercises = appData.settings.customExercises[muscleGroup] || [];
     const defaultExercises = exerciseLibrary[muscleGroup].filter(ex => !hiddenExercises.includes(ex));
     const allExercises = [...defaultExercises, ...customExercises];
-    
+
     // Apply custom ordering if it exists
     const customOrder = appData.settings.exerciseOrder?.[muscleGroup];
     if (customOrder && customOrder.length > 0) {
       const orderedExercises = [];
       const unorderedExercises = [...allExercises];
-      
+
       customOrder.forEach(exerciseName => {
         const index = unorderedExercises.indexOf(exerciseName);
         if (index !== -1) {
@@ -74,10 +117,10 @@ useEffect(() => {
           unorderedExercises.splice(index, 1);
         }
       });
-      
+
       return [...orderedExercises, ...unorderedExercises];
     }
-    
+
     return allExercises;
   };
 
@@ -101,9 +144,9 @@ useEffect(() => {
         return lastSetInCurrentWorkout.reps;
       }
     }
-    
+
     const recentWorkouts = appData.workouts.slice(-5);
-    
+
     for (let i = recentWorkouts.length - 1; i >= 0; i--) {
       const workout = recentWorkouts[i];
       if (workout.exercises && workout.exercises[exercise]) {
@@ -114,7 +157,7 @@ useEffect(() => {
         }
       }
     }
-    
+
     return 8;
   };
 
@@ -126,9 +169,9 @@ useEffect(() => {
         return lastSetInCurrentWorkout.weight;
       }
     }
-    
+
     const recentWorkouts = appData.workouts.slice(-5);
-    
+
     for (let i = recentWorkouts.length - 1; i >= 0; i--) {
       const workout = recentWorkouts[i];
       if (workout.exercises && workout.exercises[exercise]) {
@@ -139,7 +182,7 @@ useEffect(() => {
         }
       }
     }
-    
+
     return 0;
   };
 
@@ -166,13 +209,13 @@ useEffect(() => {
   const addCustomExercise = (muscleGroup, exerciseName) => {
     const trimmedName = exerciseName.trim();
     if (!trimmedName) return false;
-    
+
     const visibleExercises = getVisibleExercises(muscleGroup);
-    
+
     if (visibleExercises.includes(trimmedName)) {
       return false;
     }
-    
+
     setAppData(prev => ({
       ...prev,
       settings: {
@@ -183,21 +226,21 @@ useEffect(() => {
         }
       }
     }));
-    
+
     return true;
   };
 
   const removeExercise = (muscleGroup, exerciseName) => {
     const isDefault = exerciseLibrary[muscleGroup].includes(exerciseName);
     const isGeneral = exerciseName.endsWith('General');
-    
+
     if (isGeneral) {
       alert('General exercises cannot be removed');
       return false;
     }
-    
+
     const hasHistory = exerciseHasHistory(exerciseName);
-    
+
     if (isDefault) {
       setAppData(prev => ({
         ...prev,
@@ -221,7 +264,7 @@ useEffect(() => {
         }
       }));
     }
-    
+
     setExerciseManagement(prev => ({ ...prev, deleteConfirmation: null }));
     return hasHistory;
   };
@@ -229,11 +272,11 @@ useEffect(() => {
   const moveExerciseUp = (muscleGroup, exerciseName) => {
     const currentOrder = appData.settings.exerciseOrder?.[muscleGroup] || getVisibleExercises(muscleGroup);
     const currentIndex = currentOrder.indexOf(exerciseName);
-    
+
     if (currentIndex > 0) {
       const newOrder = [...currentOrder];
       [newOrder[currentIndex - 1], newOrder[currentIndex]] = [newOrder[currentIndex], newOrder[currentIndex - 1]];
-      
+
       setAppData(prev => ({
         ...prev,
         settings: {
@@ -250,11 +293,11 @@ useEffect(() => {
   const moveExerciseDown = (muscleGroup, exerciseName) => {
     const currentOrder = appData.settings.exerciseOrder?.[muscleGroup] || getVisibleExercises(muscleGroup);
     const currentIndex = currentOrder.indexOf(exerciseName);
-    
+
     if (currentIndex < currentOrder.length - 1) {
       const newOrder = [...currentOrder];
       [newOrder[currentIndex], newOrder[currentIndex + 1]] = [newOrder[currentIndex + 1], newOrder[currentIndex]];
-      
+
       setAppData(prev => ({
         ...prev,
         settings: {
@@ -283,11 +326,11 @@ useEffect(() => {
 
   const incrementSet = (exercise) => {
     const { repsTracking, weightTracking } = appData.settings;
-    
+
     if (repsTracking || weightTracking) {
       const lastReps = getLastReps(exercise);
       const lastWeight = getLastWeight(exercise);
-      
+
       setRepsEntry({
         exercise: exercise,
         currentReps: lastReps,
@@ -303,18 +346,18 @@ useEffect(() => {
 
   const saveSetWithData = (reps, weight) => {
     if (!repsEntry) return;
-    
+
     const { exercise } = repsEntry;
     const { repsTracking, weightTracking } = appData.settings;
-    
+
     setCurrentWorkout(prev => {
       const currentData = prev[exercise];
       let newData;
-      
+
       const setData = { set: 1 };
       if (repsTracking) setData.reps = reps;
       if (weightTracking) setData.weight = weight;
-      
+
       if (Array.isArray(currentData)) {
         setData.set = currentData.length + 1;
         newData = [...currentData, setData];
@@ -331,7 +374,7 @@ useEffect(() => {
       } else {
         newData = [setData];
       }
-      
+
       return {
         ...prev,
         [exercise]: newData
@@ -345,7 +388,7 @@ useEffect(() => {
   const decrementSet = (exercise) => {
     setCurrentWorkout(prev => {
       const currentData = prev[exercise];
-      
+
       if (Array.isArray(currentData)) {
         if (currentData.length > 1) {
           return {
@@ -370,66 +413,66 @@ useEffect(() => {
     });
   };
 
-const finishWorkout = () => {
-  const today = new Date().toISOString().split('T')[0];
-  
-  if (Object.keys(currentWorkout).length === 0) {
-    alert('No exercises were logged. Please add some sets before finishing the workout.');
-    return;
-  }
-  
-  const newWorkout = {
-    date: today,
-    startTime: currentWorkout.startTime || new Date().toISOString(), // Use captured time or current time as fallback
-    exercises: JSON.parse(JSON.stringify(currentWorkout))
-  };
-  
-  // Remove startTime from exercises object since it's not exercise data
-  delete newWorkout.exercises.startTime;
-  
-  setAppData(prev => ({
-    ...prev,
-    workouts: [...prev.workouts, newWorkout]
-  }));
-  
-  setCurrentWorkout({});
-  setAbandonConfirmation(false);
-  setView('home');
-};
+  const finishWorkout = () => {
+    const today = new Date().toISOString().split('T')[0];
 
-const goBackToHome = () => {
-  // Add guard to prevent double execution
-  if (abandonConfirmation) {
-    console.log('⚠️ Already showing abandon confirmation, skipping');
-    return;
-  }
-
-  const hasProgress = Object.values(currentWorkout).some(sets => {
-    if (Array.isArray(sets)) {
-      return sets.length > 0;
+    if (Object.keys(currentWorkout).length === 0) {
+      alert('No exercises were logged. Please add some sets before finishing the workout.');
+      return;
     }
-    return sets > 0;
-  });
-  
-  console.log('hasProgress:', hasProgress);
-  console.log('currentWorkout:', currentWorkout);
-  console.log('abandonConfirmation before:', abandonConfirmation);
-  
-  if (hasProgress) {
-    // Force immediate state update and re-render
-    setAbandonConfirmation(true);
-    
-    // Force a micro-task to ensure state is updated
-    setTimeout(() => {
-      console.log('Forced state update completed');
-    }, 0);
-  } else {
+
+    const newWorkout = {
+      date: today,
+      startTime: currentWorkout.startTime || new Date().toISOString(), // Use captured time or current time as fallback
+      exercises: JSON.parse(JSON.stringify(currentWorkout))
+    };
+
+    // Remove startTime from exercises object since it's not exercise data
+    delete newWorkout.exercises.startTime;
+
+    setAppData(prev => ({
+      ...prev,
+      workouts: [...prev.workouts, newWorkout]
+    }));
+
     setCurrentWorkout({});
     setAbandonConfirmation(false);
     setView('home');
-    console.log('No progress, going home');
-  }
-};
+  };
+
+  const goBackToHome = () => {
+    // Add guard to prevent double execution
+    if (abandonConfirmation) {
+      console.log('⚠️ Already showing abandon confirmation, skipping');
+      return;
+    }
+
+    const hasProgress = Object.values(currentWorkout).some(sets => {
+      if (Array.isArray(sets)) {
+        return sets.length > 0;
+      }
+      return sets > 0;
+    });
+
+    console.log('hasProgress:', hasProgress);
+    console.log('currentWorkout:', currentWorkout);
+    console.log('abandonConfirmation before:', abandonConfirmation);
+
+    if (hasProgress) {
+      // Force immediate state update and re-render
+      setAbandonConfirmation(true);
+
+      // Force a micro-task to ensure state is updated
+      setTimeout(() => {
+        console.log('Forced state update completed');
+      }, 0);
+    } else {
+      setCurrentWorkout({});
+      setAbandonConfirmation(false);
+      setView('home');
+      console.log('No progress, going home');
+    }
+  };
 
   const confirmAbandonWorkout = () => {
     setCurrentWorkout({});
@@ -458,11 +501,11 @@ const goBackToHome = () => {
   };
 
   const deleteWorkout = (workoutIndex) => {
-  setAppData(prev => ({
-    ...prev,
-    workouts: prev.workouts.filter((_, index) => index !== workoutIndex)
-  }));
-};
+    setAppData(prev => ({
+      ...prev,
+      workouts: prev.workouts.filter((_, index) => index !== workoutIndex)
+    }));
+  };
 
   const exportToCSV = () => {
     if (appData.workouts.length === 0) {
@@ -506,15 +549,15 @@ const goBackToHome = () => {
   };
 
   // Component props
-console.log('🔍 hasActiveSets function check:', typeof hasActiveSets, hasActiveSets);
+  console.log('🔍 hasActiveSets function check:', typeof hasActiveSets, hasActiveSets);
 
-// Add this function before commonProps
-const handleStartWorkout = () => {
-  setCurrentWorkout(prev => ({
-    ...prev,
-    startTime: new Date().toISOString()
-  }));
-};
+  // Add this function before commonProps
+  const handleStartWorkout = () => {
+    setCurrentWorkout(prev => ({
+      ...prev,
+      startTime: new Date().toISOString()
+    }));
+  };
 
   const commonProps = {
     appData,
@@ -556,25 +599,27 @@ const handleStartWorkout = () => {
     setSelectedHistoryWorkout,
     setCurrentMuscleGroup,
     onStartWorkout: handleStartWorkout,
-    deleteWorkout  // Add this line
-  
+    deleteWorkout,  // Add this line
+    abandonConfirmation,        // Add this line
+    setAbandonConfirmation     // Add this line
+
   };
 
   // Render appropriate view
-switch (view) {
-  case 'home':
-    return <HomeView {...commonProps} />;
-  case 'settings':
-    return <SettingsView {...commonProps} />;
-  case 'exercise-management':
-    return <ExerciseManagement {...commonProps} />;
-  case 'exercises':
-    return <ExerciseView {...commonProps} currentMuscleGroup={currentMuscleGroup} />;
-  case 'workout':
-  default:
-    console.log('🔍 commonProps being passed:', Object.keys(commonProps));
-    return <WorkoutView {...commonProps} />;  // Add this line
-}
+  switch (view) {
+    case 'home':
+      return <HomeView {...commonProps} />;
+    case 'settings':
+      return <SettingsView {...commonProps} />;
+    case 'exercise-management':
+      return <ExerciseManagement {...commonProps} />;
+    case 'exercises':
+      return <ExerciseView {...commonProps} currentMuscleGroup={currentMuscleGroup} />;
+    case 'workout':
+    default:
+      console.log('🔍 commonProps being passed:', Object.keys(commonProps));
+      return <WorkoutView {...commonProps} />;  // Add this line
+  }
 }
 
 export default App;
